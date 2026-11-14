@@ -46,10 +46,31 @@ export function AnalystDashboard() {
     <div className="min-h-dvh">
       <TopBar active="analyst" />
       <main className="mx-auto max-w-7xl px-4 py-5">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <section className="kavach-analyst-hero mb-5">
+          <div className="kavach-hero-copy">
+            <span className="kavach-eyebrow"><i /> KAVACH / RISK OPERATIONS</span>
+            <h1>See the signal.<br /><em>Stop the scam.</em></h1>
+            <p>Fraud intelligence for every payment moment. Monitor risk decisions, follow suspicious networks, and inspect the evidence behind every hold.</p>
+            <div className="kavach-hero-note"><span className="kavach-hero-pulse" /> Rules engine active <b>·</b> AI signals are advisory</div>
+          </div>
+          <div className="kavach-hero-art" aria-hidden="true">
+            <div className="kavach-orbit orbit-one" /><div className="kavach-orbit orbit-two" />
+            <div className="kavach-shield-illustration">
+              <svg viewBox="0 0 180 190" role="presentation">
+                <path d="M90 12 151 34v49c0 43-25 73-61 94C54 156 29 126 29 83V34z" fill="#ffb52e" stroke="#202127" strokeWidth="5" strokeLinejoin="round"/>
+                <path d="M90 31 133 47v35c0 31-17 54-43 70-26-16-43-39-43-70V47z" fill="#fffdf7" stroke="#202127" strokeWidth="4"/>
+                <path d="m66 91 16 16 34-39" fill="none" stroke="#58698f" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="143" cy="31" r="13" fill="#ef765f" stroke="#202127" strokeWidth="4"/>
+                <path d="m139 31 3 3 6-7" fill="none" stroke="#202127" strokeWidth="3" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <span className="kavach-art-label">PAYMENT<br/>PROTECTION / 01</span>
+          </div>
+        </section>
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold">Fraud analyst dashboard</h1>
-            <p className="text-sm text-muted-foreground">Synthetic data. Every number here is read from the database.</p>
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-muted-foreground">Live intelligence</p>
+            <p className="text-sm text-muted-foreground">Synthetic data · Metrics are read from the database</p>
           </div>
         </div>
         <Stats />
