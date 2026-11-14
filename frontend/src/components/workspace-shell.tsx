@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
 import { Menu, X } from 'lucide-react';
 import { ShieldLogo, cn } from '@/components/ui';
 
@@ -34,17 +35,40 @@ export function WorkspaceShell({
   header,
   footer,
 }: WorkspaceShellProps) {
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  useEffect(() => {
+    const wasOpenBefore = wasOpen.current;
+    wasOpen.current = mobileOpen;
+    if (mobileOpen) {
+      const oldOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      closeButton.current?.focus();
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') onMobileOpenChange?.(false);
+      };
+      window.addEventListener('keydown', onKeyDown);
+      return () => {
+        document.body.style.overflow = oldOverflow;
+        window.removeEventListener('keydown', onKeyDown);
+      };
+    }
+    if (wasOpenBefore) menuButton.current?.focus();
+  }, [mobileOpen, onMobileOpenChange]);
+
   return (
     <div className="kavach-workspace">
       {mobileOpen && <button type="button" className="kavach-workspace__scrim" aria-label="Close navigation" onClick={() => onMobileOpenChange?.(false)} />}
-      <aside className={cn('kavach-workspace__sidebar', mobileOpen && 'is-open')} aria-label="Workspace navigation">
+      <aside className={cn('kavach-workspace__sidebar', mobileOpen && 'is-open')} aria-label="Workspace navigation" aria-modal={mobileOpen || undefined} role={mobileOpen ? 'dialog' : undefined}>
         <div className="kavach-workspace__brand">
           <ShieldLogo size={32} />
           <span>
             <strong>Kavach Pay</strong>
             <small>Fraud intelligence</small>
           </span>
-          <button type="button" className="kavach-workspace__close" aria-label="Close navigation" onClick={() => onMobileOpenChange?.(false)}>
+          <button ref={closeButton} type="button" className="kavach-workspace__close" aria-label="Close navigation" onClick={() => onMobileOpenChange?.(false)}>
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -70,7 +94,7 @@ export function WorkspaceShell({
       </aside>
       <div className="kavach-workspace__main">
         <header className="kavach-workspace__header">
-          <button type="button" className="kavach-workspace__menu" aria-label="Open navigation" onClick={() => onMobileOpenChange?.(true)}>
+          <button ref={menuButton} type="button" className="kavach-workspace__menu" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={() => onMobileOpenChange?.(true)}>
             <Menu className="h-5 w-5" />
           </button>
           <div className="min-w-0 flex-1">{header}</div>

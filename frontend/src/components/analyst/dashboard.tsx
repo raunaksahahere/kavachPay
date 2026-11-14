@@ -1,14 +1,16 @@
 'use client';
 
-import { Bot, CheckCircle2, Database, FileCheck2, Gauge, Network, ShieldAlert, ShieldX, Wrench, XCircle } from 'lucide-react';
+import { Activity, Bot, CheckCircle2, Database, FileCheck2, Gauge, Network, ShieldAlert, ShieldX, Wrench, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import { TopBar } from '@/components/top-bar';
+import { WorkspaceShell } from '@/components/workspace-shell';
+import { AccountMenu } from '@/components/auth-context';
 import { Badge, Button, Card, EmptyState, Spinner, Textarea, cn } from '@/components/ui';
 import { api, rupees, timeAgo } from '@/lib/client/api';
 import { NetworkGraph, type GraphEdge, type GraphNode } from './network-graph';
 
-type Tab = 'flagged' | 'network' | 'audit' | 'proof' | 'eval' | 'copilot';
+type Tab = 'overview' | 'flagged' | 'network' | 'audit' | 'proof' | 'eval' | 'copilot';
 const TABS: { key: Tab; label: string; Icon: typeof Gauge }[] = [
+  { key: 'overview', label: 'Overview', Icon: Activity },
   { key: 'flagged', label: 'Flagged payments', Icon: ShieldAlert },
   { key: 'network', label: 'Mule network', Icon: Network },
   { key: 'audit', label: 'Audit log', Icon: FileCheck2 },
@@ -16,6 +18,7 @@ const TABS: { key: Tab; label: string; Icon: typeof Gauge }[] = [
   { key: 'eval', label: 'Evaluation', Icon: Gauge },
   { key: 'copilot', label: 'AI copilot', Icon: Bot },
 ];
+const EMPTY_VOLUME_HOURS = Array.from({ length: 12 }, (_, i) => ({ hour: `2000-01-01T${String(i).padStart(2, '0')}:00:00.000Z`, total: 0, allowed: 0, warned: 0, held: 0 }));
 
 const subscribeToUrl = (cb: () => void) => {
   window.addEventListener('popstate', cb);
@@ -31,21 +34,29 @@ function useUrlTab(): Tab | null {
 
 export function AnalystDashboard() {
   const urlTab = useUrlTab();
-  const [chosen, setTab] = useState<Tab | null>(null);
-  const tab = chosen ?? urlTab ?? 'flagged';
+  const tab = urlTab ?? 'overview';
   const [networkFor, setNetworkFor] = useState<string | null>(null);
+  const [priorityTxn, setPriorityTxn] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   function go(next: Tab) {
-    setTab(next);
     const url = new URL(window.location.href);
+    if (url.searchParams.get('tab') === next) return;
     url.searchParams.set('tab', next);
-    window.history.replaceState(null, '', url);
+    window.history.pushState(null, '', url);
+    window.dispatchEvent(new PopStateEvent('popstate'));
   }
 
   return (
-    <div className="min-h-dvh">
-      <TopBar active="analyst" />
-      <main className="mx-auto max-w-7xl px-4 py-5">
+    <WorkspaceShell
+      activeKey={tab}
+      mobileOpen={mobileOpen}
+      onMobileOpenChange={setMobileOpen}
+      header={<div className="flex items-center gap-3"><div className="min-w-0 flex-1"><strong className="block text-sm">Analyst workspace</strong><span className="text-xs text-muted-foreground">Fraud intelligence</span></div><AccountMenu /></div>}
+      navigation={TABS.map(({ key, label, Icon }) => ({ key, label, icon: <Icon className="h-4 w-4" /> }))}
+      onNavigate={(key) => go(key as Tab)}
+    >
+      <main className="kavach-analyst-content mx-auto w-full max-w-[1600px] px-4 py-5 lg:px-7">
         <section className="kavach-analyst-hero mb-5">
           <div className="kavach-hero-copy">
             <span className="kavach-eyebrow"><i /> KAVACH / RISK OPERATIONS</span>
@@ -67,13 +78,7 @@ export function AnalystDashboard() {
             <span className="kavach-art-label">PAYMENT<br/>PROTECTION / 01</span>
           </div>
         </section>
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.16em] text-muted-foreground">Live intelligence</p>
-            <p className="text-sm text-muted-foreground">Synthetic data · Metrics are read from the database</p>
-          </div>
-        </div>
-        <Stats />
+        {tab === 'overview' && <Overview onInvestigate={(id) => { setPriorityTxn(id ?? null); go('flagged'); }} />}
         <nav className="mt-5 flex gap-1 overflow-x-auto border-b border-border" role="tablist">
           {TABS.map((t) => (
             <button
@@ -94,6 +99,7 @@ export function AnalystDashboard() {
         <div className="pt-4">
           {tab === 'flagged' && (
             <Flagged
+              initialSelected={priorityTxn}
               onNetwork={(id) => {
                 setNetworkFor(id);
                 go('network');
@@ -107,11 +113,48 @@ export function AnalystDashboard() {
           {tab === 'copilot' && <Copilot />}
         </div>
       </main>
-    </div>
+    </WorkspaceShell>
   );
 }
 
-type StatsData = { transactions: number; warned: number; held: number; stoppedPaise: number; onHoldNow: number; auditRows: number };
+type StatsData = { transactions: number; warned: number; held: number; stoppedPaise: number; onHoldNow: number; auditRows: number; volumeHours: { hour: string; total: number; allowed: number; warned: number; held: number }[] };
+
+function Overview({ onInvestigate }: { onInvestigate: (id?: string) => void }) {
+  const [stats, setStats] = useState<StatsData | null>(null);
+  const [rows, setRows] = useState<FlaggedRow[]>([]);
+  useEffect(() => {
+    let live = true;
+    void Promise.all([api<StatsData>('/api/analyst/stats'), api<{ items: FlaggedRow[] }>('/api/analyst/flagged?limit=5')]).then(([s, r]) => {
+      if (!live) return;
+      if (s.ok) setStats(s.data);
+      if (r.ok) setRows(r.data.items);
+    });
+    return () => { live = false; };
+  }, []);
+  const max = Math.max(1, ...(stats?.volumeHours.map((x) => x.total) ?? []));
+  const total = stats ? stats.transactions : 0;
+  const allow = stats ? Math.max(0, total - stats.warned - stats.held) : 0;
+  const allowPercent = total ? (allow / total) * 100 : 0;
+  const warnPercent = total ? (stats!.warned / total) * 100 : 0;
+  return <section className="kavach-overview" aria-label="Live intelligence overview">
+    <div className="kavach-overview__heading"><div><p className="kavach-eyebrow-text">LIVE INTELLIGENCE · DATABASE METRICS</p><h2>Good morning, team.</h2><p>Real payment decisions from the Kavach risk engine.</p></div><button type="button" className="kavach-overview__action" onClick={() => onInvestigate()}>Open risk monitor <span>→</span></button></div>
+    <Stats />
+    <div className="kavach-overview__charts">
+      <Card className="kavach-chart-card"><div className="kavach-chart-title"><div><h3>Transaction volume</h3><p>Risk-scored payments · last 12 hours</p></div><Badge tone="accent">LIVE</Badge></div>
+        <div className="kavach-volume-chart" role="img" aria-label={`Transaction volume over 12 hours. ${total} decisions total.`}>
+          {(stats?.volumeHours ?? EMPTY_VOLUME_HOURS).map((h) => <div className="kavach-volume-column" key={h.hour} title={`${new Date(h.hour).toLocaleTimeString([], {hour:'2-digit'})}: ${h.total} decisions`}><span className="kavach-volume-value" style={{height:`${h.total ? Math.max(3,(h.total/max)*100) : 0}%`}}><i style={{height:`${h.total ? (h.held/h.total)*100 : 0}%`}}/><b style={{height:`${h.total ? (h.warned/h.total)*100 : 0}%`}}/></span><small>{stats ? new Date(h.hour).toLocaleTimeString([], {hour:'2-digit'}) : '—'}</small></div>)}
+        </div>
+        <div className="kavach-chart-legend"><span><i className="allow"/>Allowed</span><span><i className="warn"/>Warned</span><span><i className="hold"/>Held</span></div>
+      </Card>
+      <Card className="kavach-chart-card"><div className="kavach-chart-title"><div><h3>Decision distribution</h3><p>All time · deterministic decisions</p></div></div>
+        <div className="kavach-decision-chart"><div className="kavach-donut" role="img" aria-label={`${allow} allowed, ${stats?.warned ?? 0} warned, ${stats?.held ?? 0} held`} style={{'--allow':`${allowPercent}%`,'--warn':`${warnPercent}%`} as React.CSSProperties}><div><strong>{total.toLocaleString('en-IN')}</strong><small>scored</small></div></div><div className="kavach-decision-legend"><span><i className="allow"/><b>{allow.toLocaleString('en-IN')}</b> Allowed</span><span><i className="warn"/><b>{(stats?.warned ?? 0).toLocaleString('en-IN')}</b> Warned</span><span><i className="hold"/><b>{(stats?.held ?? 0).toLocaleString('en-IN')}</b> Held</span></div></div>
+      </Card>
+    </div>
+    <Card className="kavach-priority"><div className="kavach-chart-title"><div><h3>Priority investigations</h3><p>Recent payments requiring review</p></div><button type="button" className="kavach-text-link" onClick={() => onInvestigate()}>View all →</button></div>
+      {rows.length ? <div className="kavach-priority-list">{rows.map(row => <button type="button" key={row.id} onClick={() => onInvestigate(row.id)} className="kavach-priority-row"><span className={`kavach-priority-dot ${row.riskDecision}`}/><span className="kavach-priority-person"><b>{row.payee.name}</b><small>{row.payee.vpa} · {timeAgo(row.createdAt)}</small></span><span className="kavach-priority-amount">{rupees(row.amountPaise)}</span><Badge tone={row.riskDecision === 'hold' ? 'danger' : 'warn'}>{row.riskDecision} · {row.riskScore}</Badge></button>)}</div> : <EmptyState title="No priority investigations" hint="Flagged payments will appear here when the backend records them."/>}
+    </Card>
+  </section>;
+}
 
 function Stats() {
   const [s, setS] = useState<StatsData | null>(null);
@@ -169,10 +212,10 @@ type Detail = FlaggedRow & {
   } | null;
 };
 
-function Flagged({ onNetwork }: { onNetwork: (accountId: string) => void }) {
+function Flagged({ onNetwork, initialSelected }: { onNetwork: (accountId: string) => void; initialSelected: string | null }) {
   const [decision, setDecision] = useState<'' | 'warn' | 'hold'>('');
   const [rows, setRows] = useState<FlaggedRow[] | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(initialSelected);
 
   const [reloads, setReloads] = useState(0);
   const load = useCallback(() => {
