@@ -102,3 +102,35 @@ button:disabled { cursor:not-allowed; }
 @media(prefers-reduced-motion:reduce) {
   *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; }
 }
+
+/* Signature editorial hero — keeps all live dashboard components below it. */
+.kavach-analyst-hero {
+  position:relative; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(230px,.85fr);
+  min-height:238px; overflow:hidden; border:1px solid #7183bf; border-radius:20px;
+  background:#7e8fc8; color:#fffdf7; box-shadow:0 12px 28px rgba(55,67,105,.12);
+}
+.kavach-hero-copy { position:relative; z-index:2; padding:27px 30px; max-width:680px; }
+.kavach-eyebrow { display:flex; align-items:center; gap:8px; color:#f8e5b9; font-size:9px; font-weight:800; letter-spacing:.17em; }
+.kavach-eyebrow i,.kavach-hero-pulse { width:7px; height:7px; border-radius:50%; background:#ffb52e; box-shadow:0 0 0 4px #ffb52e2b; }
+.kavach-hero-copy h1 { margin:15px 0 9px; color:#fffdf7; font:800 clamp(27px,3vw,39px)/1.06 Manrope,sans-serif; letter-spacing:-.055em; }
+.kavach-hero-copy h1 em { color:#ffdb91; font-style:normal; }
+.kavach-hero-copy p { max-width:510px; margin:0; color:#f0f1f7; font-size:12px; line-height:1.7; }
+.kavach-hero-note { display:flex; align-items:center; gap:9px; margin-top:18px; color:#fffdf7; font-size:10px; font-weight:700; }
+.kavach-hero-note b { opacity:.5; }
+.kavach-hero-pulse { background:#b7d98a; box-shadow:0 0 0 4px #b7d98a25; }
+.kavach-hero-art { position:relative; min-height:220px; display:grid; place-items:center; overflow:hidden; }
+.kavach-orbit { position:absolute; width:205px; height:205px; border:1px solid #ffffff45; border-radius:50%; }
+.orbit-two { width:270px; height:270px; border-color:#ffffff24; }
+.kavach-shield-illustration { position:relative; z-index:1; display:grid; place-items:center; width:156px; height:166px; transform:rotate(5deg); filter:drop-shadow(0 15px 12px #303b6428); }
+.kavach-shield-illustration svg { width:100%; height:100%; overflow:visible; }
+.kavach-art-label { position:absolute; right:20px; bottom:16px; color:#fffdf7a8; font-size:8px; font-weight:800; line-height:1.5; letter-spacing:.15em; text-align:right; }
+@media(max-width:640px) {
+ .kavach-analyst-hero { grid-template-columns:1fr; min-height:0; border-radius:16px; }
+ .kavach-hero-copy { padding:22px 20px 8px; }
+ .kavach-hero-copy p { max-width:100%; }
+ .kavach-hero-art { min-height:125px; margin-top:-4px; }
+ .kavach-shield-illustration { width:105px; height:112px; }
+ .kavach-orbit { width:135px; height:135px; }
+ .orbit-two { width:185px; height:185px; }
+ .kavach-art-label { right:16px; bottom:12px; }
+}
