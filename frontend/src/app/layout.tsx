@@ -4,12 +4,13 @@ import { AuthEnabledProvider } from '@/components/auth-context';
 import { RegisterServiceWorker } from '@/components/register-sw';
 import { authEnabled } from '@/config/auth';
 import './globals.css';
+import './design-system.css';
 
 export const metadata: Metadata = {
-  title: 'Kavach Pay',
-  description: 'A UPI-style payment app with a fraud shield that speaks up before money leaves your account.',
+  title: 'Kavach Pay — Fraud Intelligence',
+  description: 'A UPI-style payment experience with an intelligent fraud shield.',
   applicationName: 'Kavach Pay',
-  appleWebApp: { capable: true, title: 'Kavach Pay', statusBarStyle: 'default' },
+  appleWebApp: { capable: true, title: 'Kavach Pay', statusBarStyle: 'black-translucent' },
   icons: {
     icon: [
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0f2a4a',
+  themeColor: '#58698f',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en">
       <body className="min-h-dvh antialiased">
-        {/* With Cache Components, Clerk's provider goes inside <body>. */}
+        {/* Keep the existing authentication and service-worker behavior intact. */}
         {authEnabled() ? (
           <ClerkProvider>
             <AuthEnabledProvider enabled>{children}</AuthEnabledProvider>
