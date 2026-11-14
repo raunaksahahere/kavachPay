@@ -51,7 +51,7 @@ export function RiskSheet({ payment, lang, userId, collectRequestId, onFinished 
 
   const needsTypedAmount = decision !== 'allow';
   const typedPaise = parseRupees(typed);
-  const canPay = !holdActive && /^\d{4,6}$/.test(pin) && (!needsTypedAmount || typedPaise !== null);
+  const canPay = !holdActive && /^\d{4,6}$/.test(pin) && (!needsTypedAmount || typedPaise === txn.amountPaise);
 
   async function pay() {
     setBusy('pay');
