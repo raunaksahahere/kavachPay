@@ -42,3 +42,9 @@ Thumbs.db
 # logs
 *.log
 npm-debug.log*
+
+# framework-generated helper file
+AGENTS.md
+
+# keys
+*.pem
