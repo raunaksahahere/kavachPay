@@ -54,7 +54,7 @@ Started 14 November 2026. Each phase lists what was built, how it was verified, 
 
 ## Phase 9 — AI evaluation ⏳
 
-- `eval/messages/messages.json`: 80 labelled synthetic messages (50 scam, 30 legitimate; English, Hindi, Bengali, Hinglish; three prompt-injection attempts).
+- `eval/messages/messages.json`: 86 labelled synthetic items: 80 text messages (50 scam, 30 legitimate; English, Hindi, Bengali, Hinglish; three prompt-injection attempts) and 6 rendered chat screenshots.
 - `npm run eval:ai` computes extractor accuracy, rules vs rules + R8 on the transaction set, and grounding pass rate, and writes `docs/eval.md`.
 - Remaining: run it once the key is available.
 

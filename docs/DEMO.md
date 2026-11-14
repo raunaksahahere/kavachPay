@@ -36,13 +36,12 @@ If Gemini is unreachable, the demo still works: the badge in the top bar reads "
 2. **Approve** → green **Looks safe** → PIN `1234` → **Pay now** → "Payment successful".
 3. "Friction only where the evidence is. RBI's proposed one-hour lag would have delayed this payment too."
 
-## 1:30 — Gemini reads the message (30 s)
+## 1:30 — What Gemini adds (30 s)
 
-1. Switch the dropdown to **Meera Das** (Bengali). Her request: *"Double debit correction - accept to get credit"*. No keyword rule matches this wording.
-2. Home → **Check a message** (or click **বা → EN**, then the button). Paste:
-   `Dear customer, double debit of Rs 2,500 detected. Accept the collect request and enter UPI PIN to get the amount back today.`
-3. Click **Check message**. Gemini returns: *Fake refund request*, "Says you will RECEIVE money", "Asks for PIN/OTP: Yes", and "+25 risk points". "Gemini describes the message; fixed rules turn that into points, capped at 25. It can never lower a score or approve anything."
-4. Optional: **Attach screenshot** with any chat screenshot to show multimodal input.
+1. Switch the dropdown to **Meera Das** (Bengali; click **EN** if needed). Her request from *Customer Care Desk*: **₹2,500**, *"Double debit correction - accept to get credit"*. No keyword rule matches this wording, and the account is not new, so **rules alone score it 5: allow**.
+2. Click **Approve**. With Gemini on, the analyzer reads the note as a fake refund request that claims she will *receive* money, and the fixed R8 table adds its capped points: the sheet turns amber, **Check before you pay**, with the reason "The message shows signs of a scam (fake refund request)" and an **R8** chip.
+3. "Gemini described the message; fixed rules turned that into at most 25 points. It can never lower a score or approve anything." Click **Decline this request**.
+4. Optional: Home → **Check a message** → **Attach screenshot** with `eval/messages/images/i01.png` to show multimodal input: scam type, "Says you will RECEIVE money", "Asks for PIN/OTP: Yes".
 
 ## 2:00 — The analyst view (45 s)
 

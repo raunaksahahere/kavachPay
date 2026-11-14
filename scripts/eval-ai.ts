@@ -23,7 +23,10 @@ import { isGrounded, templateExplanation } from '../src/lib/risk/explain';
 type Labelled = {
   id: string;
   lang: string;
-  text: string;
+  /** Message text, or null for a screenshot-only item. */
+  text: string | null;
+  /** Path of a screenshot relative to eval/messages/, for multimodal items. */
+  image?: string;
   label: {
     scam_type: string;
     money_direction_claimed: string | null;
@@ -85,7 +88,10 @@ async function main() {
   const messages = file.messages;
   let done = 0;
   const outcomes: AnalyzeOutcome[] = await pool(messages, CONCURRENCY, async (m) => {
-    const r = await withRetry(() => ai.analyze({ text: m.text }));
+    const input = m.image
+      ? { image: { mimeType: 'image/png', dataBase64: (await readFile(`eval/messages/${m.image}`)).toString('base64') } }
+      : { text: m.text ?? '' };
+    const r = await withRetry(() => ai.analyze(input));
     done++;
     if (done % 10 === 0) console.log(`  analysed ${done}/${messages.length} messages`);
     return r;
@@ -120,8 +126,11 @@ async function main() {
     else tn++;
   });
   const answered = outcomes.filter((o) => o.signals).length;
+  const imageItems = messages.map((m, i) => ({ m, o: outcomes[i] })).filter((x) => x.m.image);
+  const imageScamCorrect = imageItems.filter((x) => x.o.signals && x.o.signals.scam_type === x.m.label.scam_type).length;
   const extractor: AiRun['extractor'] = {
     messages: messages.length,
+    images: { total: imageItems.length, scamTypeCorrect: imageScamCorrect },
     answered,
     failed: messages.length - answered,
     fields: Object.fromEntries(

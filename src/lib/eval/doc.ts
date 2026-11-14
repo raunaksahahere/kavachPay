@@ -16,6 +16,8 @@ export type AiRun = {
   models: { live: string };
   extractor: {
     messages: number;
+    /** Screenshot items inside `messages` (multimodal input). */
+    images?: { total: number; scamTypeCorrect: number };
     answered: number;
     failed: number;
     fields: Record<string, { correct: number; total: number; accuracy: number | null }>;
@@ -141,7 +143,8 @@ export function renderEvalDoc(rules: RulesRun | null, ai: AiRun | null): string 
       '',
       '### Extractor accuracy (G1)',
       '',
-      `${ai.extractor.messages} labelled synthetic messages in \`eval/messages/\`; ${ai.extractor.answered} returned a schema-valid answer, ${ai.extractor.failed} did not (timeout, error or invalid output) and count as wrong.`,
+      `${ai.extractor.messages} labelled synthetic items in \`eval/messages/\`${ai.extractor.images ? ` (${ai.extractor.messages - ai.extractor.images.total} texts, ${ai.extractor.images.total} screenshots)` : ''}; ${ai.extractor.answered} returned a schema-valid answer, ${ai.extractor.failed} did not (timeout, error or invalid output) and count as wrong.`,
+      ai.extractor.images ? `Screenshots: scam type correct on ${ai.extractor.images.scamTypeCorrect} of ${ai.extractor.images.total}.` : '',
       '',
       '| Field | Correct | Accuracy |',
       '|---|---:|---:|',
