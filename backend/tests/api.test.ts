@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { generateDataset } from '../src/lib/seed/generate';
 import { loadDataset } from '../src/lib/seed/load';
@@ -68,6 +69,43 @@ describe('service endpoints', () => {
     expect(allowed.res.headers.get('access-control-allow-credentials')).toBe('true');
     const other = await call('/api/status', { headers: { Origin: 'https://evil.example' } });
     expect(other.res.headers.get('access-control-allow-origin')).toBeNull();
+  });
+
+  it('matches analyst overview totals and UTC hourly buckets to database aggregates', async () => {
+    const response = await call('/api/analyst/stats');
+    expect(response.status).toBe(200);
+    const stats = response.body;
+    const [aggregate] = (await db().execute(sql`
+      SELECT count(*) AS total,
+        count(*) FILTER (WHERE risk_decision = 'warn') AS warned,
+        count(*) FILTER (WHERE risk_decision = 'hold') AS held
+      FROM transactions WHERE risk_decision IS NOT NULL
+    `)).rows as { total: string; warned: string; held: string }[];
+    expect(stats.transactions).toBe(Number(aggregate.total));
+    expect(stats.warned).toBe(Number(aggregate.warned));
+    expect(stats.held).toBe(Number(aggregate.held));
+    expect(stats.volumeHours).toHaveLength(12);
+    const start = new Date(stats.volumeHours[0].hour);
+    const end = new Date(stats.volumeHours[11].hour);
+    end.setUTCHours(end.getUTCHours() + 1);
+    const rows = (await db().execute(sql`
+      SELECT to_char(date_trunc('hour', created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD"T"HH24') AS hour,
+        count(*) AS total,
+        count(*) FILTER (WHERE risk_decision = 'allow') AS allowed,
+        count(*) FILTER (WHERE risk_decision = 'warn') AS warned,
+        count(*) FILTER (WHERE risk_decision = 'hold') AS held
+      FROM transactions
+      WHERE risk_decision IS NOT NULL AND created_at >= ${start} AND created_at < ${end}
+      GROUP BY 1 ORDER BY 1
+    `)).rows as { hour: string; total: string; allowed: string; warned: string; held: string }[];
+    const expected = new Map(rows.map((row) => [row.hour, {
+      total: Number(row.total), allowed: Number(row.allowed), warned: Number(row.warned), held: Number(row.held),
+    }] as const));
+    expect(stats.volumeHours.map((row: { hour: string; total: number; allowed: number; warned: number; held: number }) => ({
+      hour: row.hour.slice(0, 13), total: row.total, allowed: row.allowed, warned: row.warned, held: row.held,
+    }))).toEqual(stats.volumeHours.map((row: { hour: string }) => ({
+      hour: row.hour.slice(0, 13), ...(expected.get(row.hour.slice(0, 13)) ?? { total: 0, allowed: 0, warned: 0, held: 0 }),
+    })));
   });
 });
 

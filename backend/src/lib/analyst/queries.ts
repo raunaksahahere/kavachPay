@@ -281,6 +281,28 @@ export async function dashboardStats(db: DbOrTx) {
       (SELECT count(*) FROM audit_log) AS audit_rows
   `);
   const r = result.rows[0] as Row;
+  const hours = await db.execute(sql`
+    SELECT to_char(date_trunc('hour', created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD"T"HH24') AS hour, count(*) AS total,
+      count(*) FILTER (WHERE risk_decision = 'allow') AS allowed,
+      count(*) FILTER (WHERE risk_decision = 'warn') AS warned,
+      count(*) FILTER (WHERE risk_decision = 'hold') AS held
+    FROM transactions
+    WHERE risk_decision IS NOT NULL
+      AND created_at >= (date_trunc('hour', now() AT TIME ZONE 'UTC') - interval '11 hours') AT TIME ZONE 'UTC'
+    GROUP BY 1 ORDER BY 1
+  `);
+  const byHour = new Map((hours.rows as Row[]).map((row) => [
+    String(row.hour),
+    { total: Number(row.total), allowed: Number(row.allowed), warned: Number(row.warned), held: Number(row.held) },
+  ] as const));
+  const now = new Date();
+  const volumeHours = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date(now);
+    date.setUTCMinutes(0, 0, 0);
+    date.setUTCHours(date.getUTCHours() - (11 - i));
+    const key = date.toISOString().slice(0, 13);
+    return { hour: date.toISOString(), ...byHour.get(key) ?? { total: 0, allowed: 0, warned: 0, held: 0 } };
+  });
   return {
     transactions: Number(r.total),
     warned: Number(r.warned),
@@ -288,5 +310,6 @@ export async function dashboardStats(db: DbOrTx) {
     stoppedPaise: Number(r.stopped_paise),
     onHoldNow: Number(r.on_hold_now),
     auditRows: Number(r.audit_rows),
+    volumeHours,
   };
 }

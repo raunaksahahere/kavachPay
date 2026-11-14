@@ -78,8 +78,43 @@ test('a wrong PIN is refused and no money moves', async ({ page }) => {
   await expect(page.getByTestId('balance')).toHaveText(before);
 });
 
+test('typed amount mismatch on a warned payment cannot settle', async ({ page }) => {
+  await openAsha(page);
+  await page.getByTestId('lang-en').click();
+  await page.getByTestId('action-pay').click();
+  await page.getByTestId('pay-vpa').fill('refund.helpdesk@kavach');
+  await expect(page.getByTestId('payee-name')).toBeVisible();
+  await page.getByTestId('pay-amount').fill('900');
+  await page.getByTestId('pay-continue').click();
+  await expect(page.getByTestId('risk-sheet')).toHaveAttribute('data-decision', 'warn');
+  await page.getByTestId('pin-input').fill('1234');
+  await page.getByTestId('typed-amount').fill('901');
+  await expect(page.getByTestId('pay-button')).toBeDisabled();
+  await expect(page.getByTestId('payment-finished')).toHaveCount(0);
+  await page.getByTestId('stop-button').click();
+  await page.getByRole('button', { name: 'Done' }).click();
+});
+
+test('payment API failure stays a failure and never renders a success state', async ({ page }) => {
+  await openAsha(page);
+  await page.getByTestId('lang-en').click();
+  await page.route('**/api/payments', (route) => route.fulfill({
+    status: 503,
+    contentType: 'application/json',
+    body: JSON.stringify({ error: { code: 'service_unavailable', message: 'Service temporarily unavailable.' } }),
+  }));
+  await page.getByTestId('action-pay').click();
+  await page.getByTestId('pay-vpa').fill('sharmakirana@kavach');
+  await expect(page.getByTestId('payee-name')).toBeVisible();
+  await page.getByTestId('pay-amount').fill('120');
+  await page.getByTestId('pay-continue').click();
+  await expect(page.getByTestId('pay-form-error')).toContainText('Service temporarily unavailable.');
+  await expect(page.getByTestId('payment-finished')).toHaveCount(0);
+});
+
 test('the analyst can see the held payment, the mule ring and a verified audit chain', async ({ page }) => {
   await page.goto('/analyst');
+  await page.getByTestId('tab-flagged').click();
   await expect(page.getByTestId('flagged-table')).toBeVisible();
   await page.locator('[data-testid="flagged-table"] tbody tr').first().click();
   await expect(page.getByTestId('txn-detail')).toContainText('R1_DIRECTION_MISMATCH');

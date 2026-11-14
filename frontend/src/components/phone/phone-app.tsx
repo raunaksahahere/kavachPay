@@ -12,10 +12,11 @@ import type { PaymentView, Wallet } from './types';
 
 type Screen =
   | { name: 'home' }
-  | { name: 'pay' }
+  | { name: 'pay'; error?: string }
   | { name: 'request' }
   | { name: 'check' }
   | { name: 'checking'; label: string }
+  | { name: 'failure'; message: string }
   | { name: 'risk'; payment: PaymentView; collectRequestId?: string };
 
 export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang; onLang: (l: Lang) => void }) {
@@ -64,14 +65,13 @@ export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang;
     const res = await api<PaymentView>(`/api/collect/${requestId}/approve`, { body: { userId, lang } });
     if (res.ok) setScreen({ name: 'risk', payment: res.data, collectRequestId: requestId });
     else {
-      alert(res.error.message);
-      home();
+      setScreen({ name: 'failure', message: res.error.message });
     }
   }
 
   async function decline(requestId: string) {
     const res = await api(`/api/collect/${requestId}/decline`, { body: { userId } });
-    if (!res.ok) alert(res.error.message);
+    if (!res.ok) setScreen({ name: 'failure', message: res.error.message });
     void load();
   }
 
@@ -141,7 +141,8 @@ export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang;
           balancePaise={wallet.me.balancePaise}
           onChecking={() => setScreen({ name: 'checking', label: t('checking', lang) })}
           onResult={(payment) => setScreen({ name: 'risk', payment })}
-          onError={() => setScreen({ name: 'pay' })}
+          onError={(message) => setScreen({ name: 'pay', error: message })}
+          initialError={screen.name === 'pay' ? screen.error : undefined}
         />
       )}
       {wallet && screen.name === 'request' && <RequestForm lang={lang} userId={userId} onDone={home} />}
@@ -150,6 +151,13 @@ export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang;
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center" data-testid="checking">
           <ShieldLogo size={64} className="pulse" />
           <p className="font-medium">{screen.label}</p>
+        </div>
+      )}
+      {screen.name === 'failure' && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center" role="alert" data-testid="payment-failure">
+          <ShieldAlert className="h-14 w-14 text-danger" />
+          <div><p className="text-xl font-bold">Could not continue</p><p className="mt-2 text-sm text-muted-foreground">{screen.message}</p><p className="mt-2 text-xs text-muted-foreground">No payment success was recorded.</p></div>
+          <Button className="w-full" onClick={home}>Back to account</Button>
         </div>
       )}
       {screen.name === 'risk' && (
@@ -321,19 +329,21 @@ function PayForm({
   onChecking,
   onResult,
   onError,
+  initialError,
 }: {
   lang: Lang;
   userId: string;
   balancePaise: number;
   onChecking: () => void;
   onResult: (p: PaymentView) => void;
-  onError: () => void;
+  onError: (message: string) => void;
+  initialError?: string;
 }) {
   const [vpa, setVpa] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [message, setMessage] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
   const lookup = useVpaLookup(vpa);
   const amountPaise = useMemo(() => parseRupees(amount), [amount]);
   const valid = lookup.name && amountPaise && amountPaise > 0;
@@ -355,8 +365,7 @@ function PayForm({
     });
     if (res.ok) onResult(res.data);
     else {
-      onError();
-      alert(res.error.message);
+      onError(res.error.message);
     }
   }
 
@@ -391,7 +400,7 @@ function PayForm({
           data-testid="pay-message"
         />
       </div>
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger" data-testid="pay-form-error">{error}</p>}
       <Button size="lg" className="mt-auto w-full" disabled={!valid} onClick={submit} data-testid="pay-continue">
         {t('continue', lang)}
       </Button>
