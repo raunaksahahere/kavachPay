@@ -1,4 +1,5 @@
 import { desc, eq } from 'drizzle-orm';
+import { existsSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Db } from '@/db/client';
@@ -168,7 +169,10 @@ export function renderEvalDoc(rules: RulesRun | null, ai: AiRun | null): string 
 
 export async function writeEvalDoc(db: Db): Promise<string> {
   const { rules, ai } = await latestRuns(db);
-  const file = path.resolve(process.cwd(), 'docs', 'eval.md');
+  // The repository's docs/ folder sits next to backend/; fall back to ./docs elsewhere.
+  const repoDocs = path.resolve(process.cwd(), '..', 'docs');
+  const dir = existsSync(path.join(repoDocs, 'research.md')) ? repoDocs : path.resolve(process.cwd(), 'docs');
+  const file = path.join(dir, 'eval.md');
   await writeFile(file, renderEvalDoc(rules, ai));
-  return 'docs/eval.md';
+  return path.relative(process.cwd(), file);
 }

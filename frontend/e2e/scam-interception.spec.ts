@@ -82,7 +82,9 @@ test('typed amount mismatch on a warned payment cannot settle', async ({ page })
   await openAsha(page);
   await page.getByTestId('lang-en').click();
   await page.getByTestId('action-pay').click();
-  await page.getByTestId('pay-vpa').fill('refund.helpdesk@kavach');
+  // A 6-day-old payee with no fan-in: new payee + young account = 30, a warn.
+  // (refund.helpdesk is the planted mule hub, so paying it is a hold, not a warn.)
+  await page.getByTestId('pay-vpa').fill('order.refund.team@kavach');
   await expect(page.getByTestId('payee-name')).toBeVisible();
   await page.getByTestId('pay-amount').fill('900');
   await page.getByTestId('pay-continue').click();
@@ -116,7 +118,13 @@ test('the analyst can see the held payment, the mule ring and a verified audit c
   await page.goto('/analyst');
   await page.getByTestId('tab-flagged').click();
   await expect(page.getByTestId('flagged-table')).toBeVisible();
-  await page.locator('[data-testid="flagged-table"] tbody tr').first().click();
+  // The seeded "refund" collect request Asha approved (and declined) in the first test.
+  await page
+    .locator('[data-testid="flagged-table"] tbody tr')
+    .filter({ hasText: 'collect · from Asha Devi' })
+    .filter({ hasText: 'Refund Helpdesk' })
+    .first()
+    .click();
   await expect(page.getByTestId('txn-detail')).toContainText('R1_DIRECTION_MISMATCH');
 
   await page.getByTestId('open-network').click();

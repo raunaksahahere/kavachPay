@@ -117,6 +117,9 @@ export function AnalystDashboard() {
   );
 }
 
+/** Hour label for the UTC volume buckets; identical on server and browser (no locale formatting). */
+const utcHour = (iso: string) => String(new Date(iso).getUTCHours()).padStart(2, '0');
+
 type StatsData = { transactions: number; warned: number; held: number; stoppedPaise: number; onHoldNow: number; auditRows: number; volumeHours: { hour: string; total: number; allowed: number; warned: number; held: number }[] };
 
 function Overview({ onInvestigate }: { onInvestigate: (id?: string) => void }) {
@@ -137,12 +140,12 @@ function Overview({ onInvestigate }: { onInvestigate: (id?: string) => void }) {
   const allowPercent = total ? (allow / total) * 100 : 0;
   const warnPercent = total ? (stats!.warned / total) * 100 : 0;
   return <section className="kavach-overview" aria-label="Live intelligence overview">
-    <div className="kavach-overview__heading"><div><p className="kavach-eyebrow-text">LIVE INTELLIGENCE · DATABASE METRICS</p><h2>Good morning, team.</h2><p>Real payment decisions from the Kavach risk engine.</p></div><button type="button" className="kavach-overview__action" onClick={() => onInvestigate()}>Open risk monitor <span>→</span></button></div>
+    <div className="kavach-overview__heading"><div><p className="kavach-eyebrow-text">LIVE INTELLIGENCE · DATABASE METRICS</p><h2>Hello, team.</h2><p>Real payment decisions from the Kavach risk engine.</p></div><button type="button" className="kavach-overview__action" onClick={() => onInvestigate()}>Open risk monitor <span>→</span></button></div>
     <Stats data={stats} />
     <div className="kavach-overview__charts">
-      <Card className="kavach-chart-card"><div className="kavach-chart-title"><div><h3>Transaction volume</h3><p>Risk-scored payments · last 12 hours</p></div><Badge tone="accent">LIVE</Badge></div>
+      <Card className="kavach-chart-card"><div className="kavach-chart-title"><div><h3>Transaction volume</h3><p>Risk-scored payments · last 12 hours (UTC)</p></div><Badge tone="accent">LIVE</Badge></div>
         <div className="kavach-volume-chart" role="img" aria-label={`Transaction volume over 12 hours. ${total} decisions total.`}>
-          {(stats?.volumeHours ?? EMPTY_VOLUME_HOURS).map((h) => <div className="kavach-volume-column" key={h.hour} title={`${new Date(h.hour).toLocaleTimeString([], {hour:'2-digit'})}: ${h.total} decisions`}><span className="kavach-volume-value" style={{height:`${h.total ? Math.max(3,(h.total/max)*100) : 0}%`}}><i style={{height:`${h.total ? (h.held/h.total)*100 : 0}%`}}/><b style={{height:`${h.total ? (h.warned/h.total)*100 : 0}%`}}/></span><small>{stats ? new Date(h.hour).toLocaleTimeString([], {hour:'2-digit'}) : '—'}</small></div>)}
+          {(stats?.volumeHours ?? EMPTY_VOLUME_HOURS).map((h) => <div className="kavach-volume-column" key={h.hour} title={`${utcHour(h.hour)}:00 UTC: ${h.total} decisions`}><span className="kavach-volume-value" style={{height:`${h.total ? Math.max(3,(h.total/max)*100) : 0}%`}}><i style={{height:`${h.total ? (h.held/h.total)*100 : 0}%`}}/><b style={{height:`${h.total ? (h.warned/h.total)*100 : 0}%`}}/></span><small>{stats ? utcHour(h.hour) : '—'}</small></div>)}
         </div>
         <div className="kavach-chart-legend"><span><i className="allow"/>Allowed</span><span><i className="warn"/>Warned</span><span><i className="hold"/>Held</span></div>
       </Card>

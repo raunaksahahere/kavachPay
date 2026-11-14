@@ -152,3 +152,11 @@ Reviewed against the original build brief and every request added during the bui
 - `npm test`: 102 passed (7 files).
 - `npm run test:e2e`: 11 passed (8 with sign-in off, 3 with sign-in on).
 - `npm run lint`, `npm run typecheck`, `npm run build`: clean.
+
+## Restructure — separate backend and frontend (14 Nov 2026)
+
+- `backend/`: standalone Hono API on Node (validated config, request logging, CORS for the frontend, Clerk JWT verification, demo-trial sessions by cookie or `X-Demo-Session` header, OpenAPI at `/docs`, live `/api/analyst/proof`), Dockerfile, Render Blueprint (`render.yaml`). Migrations run on start.
+- `frontend/`: Next.js UI with no server logic; `/api/*` is forwarded to the backend (`BACKEND_URL`).
+- Merged the teammate's `feat/kavach-design-first-frontend` branch (editorial design system, live analyst overview with UTC hourly volume, extra payment-failure and typed-amount tests). Fixed two of its test expectations (paying the planted mule hub is correctly a hold, not a warn; the analyst test now opens the specific refund collect row) and a hydration mismatch in the hour labels.
+- Verified: backend 115 tests (unit, integration, in-process API); frontend typecheck and lint clean; Playwright 13 tests against both services with sign-in off and on; Docker image built and run; `scripts/api-walkthrough.sh` against the running API; Neon migrated and reseeded (200 users, 5,043 labelled payments, 4 pending demo requests).
+- Open (needs a decision): analyst endpoints are available to any signed-in user or demo session; there are no analyst roles (see `docs/FRONTEND_UI_MIGRATION.md`).
