@@ -287,7 +287,8 @@ export async function dashboardStats(db: DbOrTx) {
       count(*) FILTER (WHERE risk_decision = 'warn') AS warned,
       count(*) FILTER (WHERE risk_decision = 'hold') AS held
     FROM transactions
-    WHERE risk_decision IS NOT NULL AND created_at >= date_trunc('hour', now()) - interval '11 hours'
+    WHERE risk_decision IS NOT NULL
+      AND created_at >= (date_trunc('hour', now() AT TIME ZONE 'UTC') - interval '11 hours') AT TIME ZONE 'UTC'
     GROUP BY 1 ORDER BY 1
   `);
   const byHour = new Map((hours.rows as Row[]).map((row) => [
