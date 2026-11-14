@@ -20,14 +20,16 @@ Requires Node.js 22 or later and a Postgres database (a [Neon](https://neon.tech
 ```bash
 git clone https://github.com/raunaksahahere/kavachPay && cd kavachPay
 npm install
-cp .env.example .env.local        # then set DATABASE_URL, and optionally GEMINI_API_KEY
-npm run db:migrate && npm run db:seed && npm run eval:rules
-npm run dev                       # open http://localhost:3000
+cp .env.example .env.local        # then set DATABASE_URL (and optionally GEMINI_API_KEY, Clerk keys)
+npx clerk@latest init --framework next --accountless -y --no-skills   # only if you have no Clerk keys: writes temporary dev keys
+npm run db:migrate && npm run db:seed && npm run eval:rules && npm run dev   # open http://localhost:3000
 ```
 
 No Postgres to hand? `docker compose up -d --wait` starts one on port 5433; use `DATABASE_URL=postgresql://kavach:kavach@localhost:5433/kavach_test`.
 
-Sign in with Clerk (any email; in Clerk development mode an address containing `+clerk_test` accepts the code `424242`), then pick a demo persona. Every demo account's UPI PIN is **1234**.
+Two ways in:
+- **Sign in with Clerk** to get your **own fresh account**: choose a UPI ID (`name@kavach`), a language and a UPI PIN; it starts with a simulated ₹10,000 balance. Nobody else can act on it.
+- **Demo account trial** (button under the sign-in form): pick one of the shared synthetic accounts, no sign-up needed. Open two different demo accounts on two devices to send requests and payments between them. Every demo account's UPI PIN is **1234**.
 
 ### Environment variables
 
@@ -36,6 +38,7 @@ Sign in with Clerk (any email; in Clerk development mode an address containing `
 | `DATABASE_URL` | yes | Postgres connection string for the app (Neon or local). |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | yes in production | Clerk sign-in. Locally, `npx clerk@latest init --framework next --accountless` writes temporary development keys to `.env.local`. |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | yes | `/sign-in` and `/sign-up`. |
+| `DEMO_SESSION_SECRET` | no | Signs demo-trial cookies; derived from `CLERK_SECRET_KEY` if empty. |
 | `AUTH_DISABLED=1` | no | Turn sign-in off (the automated tests do this). |
 | `GEMINI_API_KEY` | no | Turns on the Gemini layer. Without it the app runs in rules-only mode and every flow still works. |
 | `TEST_DATABASE_URL` | for tests | Database the unit/integration tests may wipe. Defaults to the local container. |
@@ -68,7 +71,9 @@ Sign in with Clerk (any email; in Clerk development mode an address containing `
 - **Check a message:** paste an SMS or WhatsApp text, or attach a screenshot, and see what it really asks you to do.
 - The risk sheet: **allow** (PIN only), **warn** (reasons shown, type the amount to continue), **hold** (payment blocked for a 30-minute cooling period, reasons shown).
 - English, Hindi and Bengali.
-- **Clerk sign-in** protects every page and API route; after signing in you pick a synthetic demo persona.
+- **Clerk sign-in** protects every page and API route. A signed-in user sees only their own account; the server decides whose account a request acts on and ignores any account id the browser sends.
+- **Demo account trial** for presentations: shared synthetic accounts behind a signed, expiring cookie that can only ever reach demo personas. The inbox refreshes every 5 seconds, so a request sent from a second device appears on its own.
+- **Install app** button: the browser's install prompt on Android and desktop Chrome, "Share → Add to Home Screen" instructions on iPhone.
 
 **Analyst dashboard** (`/analyst`):
 - Flagged payments with the full rule trace and the exact text the user saw.
@@ -184,4 +189,4 @@ What we do not claim: we have no access to these apps' internal fraud systems, w
 - Simulated rail; no NPCI, bank or real money. Person-to-person collect was discontinued on real UPI from 1 October 2025; the collect flow here models the pull payments that remain, and the same shield covers push payments.
 - Synthetic data, and thresholds tuned on it.
 - The mule rules are our own heuristics; RBI's indicator list is not public.
-- Any signed-in user can act as any synthetic demo persona (the personas are shared demo data, not personal accounts). No security audit. Built in a hackathon.
+- Demo-trial accounts are shared by everyone using the trial and reset when the data is reseeded (which also removes signed-in users' accounts; they are recreated on next sign-in). No security audit. Built in a hackathon.

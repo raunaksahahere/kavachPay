@@ -65,16 +65,24 @@ Started 14 November 2026. Each phase lists what was built, how it was verified, 
 - PWA: web app manifest, icons (including maskable), service worker that caches only the shell and never API responses, offline page, security headers.
 - Verified: `npm run lint`, `npm run typecheck` and `npm run build` clean; Playwright (8 tests, Chrome) covers the scam interception in English, the Hindi allow path, a wrong PIN, the analyst views, HTTP-level idempotency replay, validation errors, rules-only message checking and PWA installability.
 
-## Phase 11 — Deploy and docs ⏳
+## Phase 11 — Deploy and docs ✅ (deployment by Raunak)
 
 - `README.md`, `docs/DEMO.md` written.
 - Verified from a fresh clone (14 Nov 2026): `npm ci`, copy `.env.example`, `db:migrate`, `db:seed`, `eval:rules`, `build`, `start` against an empty database. Same counts and same metrics as the original run; `/`, `/analyst`, `/manifest.webmanifest` and the APIs respond.
+- Re-verified from a fresh clone after sign-in was added (14 Nov 2026): the README steps including `npx clerk@latest init --accountless` give a working app with no Gemini key; `/sign-in` shows the demo-trial button, a demo session reaches its persona's wallet, and the API refuses requests with no session.
 - Deployment to Vercel: done by Raunak manually (needs `DATABASE_URL`, `GEMINI_API_KEY`, the Clerk keys and sign-in URLs as Vercel environment variables).
 
 ## Added on request — Clerk sign-in ✅
 
 - Clerk (`@clerk/nextjs` 7) via the Next.js 16 proxy: every page and API requires sign-in except sign-in/sign-up, `/api/status` and the PWA files; route handlers re-check the session. Account menu in the top bar. Local development uses Clerk accountless development keys; production needs the two Clerk keys in Vercel.
 - Verified: unauthenticated requests to pages and APIs redirect to Clerk; public routes stay public. `AUTH_DISABLED=1` keeps the automated tests deterministic.
+
+## Added on request — own accounts, demo trial, install button ✅
+
+- Signed-in Clerk users get one fresh account of their own (UPI ID, language, Argon2id PIN, simulated ₹10,000 opening balance moved by double-entry from the system account). The demo-persona switcher is gone for them; the server resolves the account from the session and ignores ids sent by the browser.
+- "Demo account trial" under the sign-in form: shared synthetic personas behind an HMAC-signed, expiring cookie that can only reach demo personas ("Refund Helpdesk" added for the two-device scam demo). Inbox refreshes every 5 seconds.
+- "Install app" button: `beforeinstallprompt` on Android/Chrome, instructions on iPhone; hidden once installed.
+- Verified: 15 new unit/integration tests (cookie tampering and expiry, account creation and races, identity resolution); Playwright "auth" project with sign-in on: signed-out redirect and the two buttons, a two-device demo where a request from Refund Helpdesk appears on Asha's screen without reload and is held, and a demo session that cannot read another account by sending its id.
 
 ## Added on request — PWA ✅
 
@@ -83,7 +91,64 @@ Started 14 November 2026. Each phase lists what was built, how it was verified, 
 ## Known limitations
 
 - Simulated payment rail and synthetic data; metrics describe this dataset only.
-- Signed-in users can act as any synthetic demo persona; personas are not bound to Clerk accounts.
+- Demo-trial accounts are shared by everyone using the trial; reseeding resets them and removes signed-in users' accounts (recreated on next sign-in).
+- The analyst dashboard is open to any session (own account or demo trial); there are no analyst roles.
 - Rate limits use a fixed window in Postgres; adequate for a demo, not tuned for scale.
 - The mule rules are our own heuristics.
 - The R7 pass-through rule counts any outgoing payment that follows an inflow within 30 minutes, which can over-count for very active merchants (none were flagged in the evaluation).
+
+## Final review — scope, achieved, left (14 Nov 2026)
+
+Reviewed against the original build brief and every request added during the build.
+
+### Scope from the brief
+
+| Item | Status | Evidence |
+|---|---|---|
+| Research with sources (`docs/research.md`) | Done | Every claim tagged to a URL; unverifiable figures left out |
+| Idea PDF on the Desktop, visually checked | Done, one gap | 6 pages, every page rendered and inspected; differentiation section added on request. **Team name and members are not on the title page: they were never provided** |
+| Payment rail: pay, collect (request/approve/decline), balances, history | Done | Unit, integration and Playwright tests |
+| Double-entry ledger, idempotency, state machine, row locks, non-negative balance | Done | Double-submit (sequential, 5 concurrent, two keys, over HTTP), 20-way concurrency, deadlock, zero-sum and database-guard tests |
+| Argon2id PIN, rate limits, Zod everywhere, hash-chained audit log with Verify | Done | PIN lockout, rate-limit and tamper-at-exact-row tests |
+| Risk rules R1–R7 + config + reasons; allow / warn (type amount) / hold (cooling period) | Done | Per-rule unit tests; thresholds and weights in `src/config/risk.ts` |
+| Gemini G1 analyzer (text + screenshot, structured output) | Done | Verified live; schema, timeout and injection tests |
+| Gemini G2 grounded explainer, templates for every rule in en/hi/bn | Done | Live grounding 36/36; template fallback tests |
+| Gemini G3 read-only copilot with tool trace, max 6 steps | Done | No write tools (tested), argument validation, step cap |
+| Decision boundary: AI can only add (cap +25), never lowers, timeout, works with AI off | Done | "Model says safe cannot lower the score" test; rules-only mode tested end to end |
+| Demo cache labelled "cached" | Done | Cache test |
+| Deterministic seed: ~200 users, ~5,000 payments, mule ring, refund scams, takeover bursts, legit high-value | Done | 200 users, 5,043 labelled payments; repeatability test |
+| Rules-only eval per scenario | Done | Precision 85.7%, recall 71.0%, FPR 0.4% |
+| G4: ~80 labelled messages, extractor accuracy, rules vs rules+AI, grounding rate, `docs/eval.md` from a real run | Done | 86 items (80 texts, 6 screenshots); recall 71.0% → 84.0%, precision 85.7% → 87.7%, FPR unchanged; paraphrased refund scams 0/22 → 22/22 |
+| UI: phone-frame app, analyst dashboard, mule graph, audit verify, eval page, copilot | Done | Screens checked by screenshot; Playwright |
+| Playwright smoke test of the scam interception | Done | 11 browser tests in two projects (sign-in off and on) |
+| README (≤5 setup commands), `docs/DEMO.md`, this log | Done | Fresh-clone verification, twice |
+| Commits by `raunaksahahere`, no attribution, no secrets | Done | `git log` checked; secrets moved out of `.env.example` before the first push |
+| Stack: Tailwind + shadcn/ui | Partly | shadcn/ui-style components written by hand in `src/components/ui`; the shadcn CLI could not run because npm was timing out |
+| Deploy to Vercel | Left to Raunak | He chose to deploy manually; variable list in README and the Desktop env files |
+
+### Added during the build, on request
+
+| Request | Status |
+|---|---|
+| Installable PWA (manifest, icons, service worker, offline page) | Done, tested |
+| Push to GitHub before hosting; local preview first | Done |
+| "How is it different from GPay / PhonePe" (answer, README, PDF) | Done, sourced |
+| Clerk sign-in | Done; real sign-in checked by hand (Clerk's bot check stops automation) |
+| Own fresh account per signed-in user, no demo personas for them | Done, tested at library and API level; onboarding screen to be checked by hand after sign-in |
+| "Demo account trial" button under sign-in, two-device request and payment demo | Done, tested with two browser sessions |
+| "Install app" button for phones | Done; the browser's own prompt only appears on the HTTPS deployment |
+| Secrets and config env files on the Desktop | Done (`Kavach-Pay-secrets.env`, mode 600; `Kavach-Pay-config.env`) |
+
+### Left / for Raunak
+
+1. Deploy to Vercel and set the environment variables (README table; values in the Desktop env files).
+2. For a clean production login, create a Clerk production instance and use its `pk_live_`/`sk_live_` keys (the current keys are development keys, which show a "Development mode" badge).
+3. After deploying: sign in once to check the onboarding screen, and test "Install app" on a phone over HTTPS.
+4. Team name and members for the PDF title page, if wanted (`docs/idea-brief.md` front matter, then `npm run pdf`).
+5. Before presenting: `npm run db:seed` for fresh demo requests, and rehearse `docs/DEMO.md`.
+
+### Final test status
+
+- `npm test`: 102 passed (7 files).
+- `npm run test:e2e`: 11 passed (8 with sign-in off, 3 with sign-in on).
+- `npm run lint`, `npm run typecheck`, `npm run build`: clean.
