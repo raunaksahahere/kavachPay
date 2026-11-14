@@ -131,7 +131,8 @@ export function createGeminiAi(options: GeminiOptions): AiPort {
         {
           model,
           system_instruction: ANALYZE_SYSTEM_INSTRUCTION,
-          input: parts,
+          // The v1 Interactions API takes content inside a user_input step.
+          input: [{ type: 'user_input', content: parts }],
           response_format: { type: 'text', mime_type: 'application/json', schema: scamSignalsJsonSchema },
           generation_config: { thinking_level: 'minimal' },
         },
@@ -191,7 +192,7 @@ export function createGeminiAi(options: GeminiOptions): AiPort {
         {
           model,
           system_instruction: EXPLAIN_SYSTEM_INSTRUCTION,
-          input: [{ type: 'text', text: JSON.stringify(payload) }],
+          input: [{ type: 'user_input', content: [{ type: 'text', text: JSON.stringify(payload) }] }],
           response_format: { type: 'text', mime_type: 'application/json', schema: explanationJsonSchema },
           generation_config: { thinking_level: 'minimal' },
         },
