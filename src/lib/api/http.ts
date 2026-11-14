@@ -1,15 +1,24 @@
+import { unstable_rethrow } from 'next/navigation';
+import { connection } from 'next/server';
 import { z, ZodError } from 'zod';
 import { APP_CONFIG } from '@/config/app';
 import { getDb } from '@/db/client';
 import { AppError } from '@/lib/errors';
 import { enforceRateLimit, type RateLimitRule } from '@/lib/security/rate-limit';
 
-/** Wraps a route handler: expected errors become JSON with their status, anything else a generic 500. */
+/**
+ * Wraps a route handler. Every API response reads live data, so it waits for a
+ * real request (never prerendered). Expected errors become JSON with their
+ * status, anything else a generic 500; Next.js's own control-flow errors are
+ * passed through untouched.
+ */
 export function handle<Ctx>(fn: (req: Request, ctx: Ctx) => Promise<Response>) {
   return async (req: Request, ctx: Ctx): Promise<Response> => {
+    await connection();
     try {
       return await fn(req, ctx);
     } catch (err) {
+      unstable_rethrow(err);
       if (err instanceof AppError) {
         const headers: Record<string, string> = {};
         const retry = err.details?.retryAfterSeconds;

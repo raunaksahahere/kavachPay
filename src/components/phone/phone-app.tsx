@@ -21,27 +21,29 @@ type Screen =
 export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang; onLang: (l: Lang) => void }) {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [screen, setScreen] = useState<Screen>({ name: 'home' });
+  // PhoneApp only renders in the browser (after the demo users load), so reading the URL here is safe.
+  const [screen, setScreen] = useState<Screen>(() =>
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screen') === 'check'
+      ? { name: 'check' }
+      : { name: 'home' },
+  );
 
-  const load = useCallback(async () => {
-    const res = await api<Wallet>(`/api/wallet?userId=${userId}`);
-    if (res.ok) {
-      setWallet(res.data);
-      setLoadError(null);
-    } else setLoadError(res.error.message);
-  }, [userId]);
-
-  useEffect(() => {
-    setWallet(null);
-    setScreen({ name: 'home' });
-    void load();
-  }, [load]);
+  const [reloads, setReloads] = useState(0);
+  const load = useCallback(() => setReloads((n) => n + 1), []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screen') === 'check') {
-      setScreen({ name: 'check' });
-    }
-  }, []);
+    let alive = true;
+    void api<Wallet>(`/api/wallet?userId=${userId}`).then((res) => {
+      if (!alive) return;
+      if (res.ok) {
+        setWallet(res.data);
+        setLoadError(null);
+      } else setLoadError(res.error.message);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [userId, reloads]);
 
   const home = () => {
     setScreen({ name: 'home' });
@@ -287,22 +289,20 @@ function Home({
   );
 }
 
+/** Shows the registered name for a UPI ID before paying, as real UPI apps do. */
 function useVpaLookup(vpa: string) {
-  const [name, setName] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const v = vpa.trim().toLowerCase();
+  const [result, setResult] = useState<{ vpa: string; name: string | null; error: string | null } | null>(null);
   useEffect(() => {
-    setName(null);
-    setError(null);
-    const v = vpa.trim().toLowerCase();
     if (!/^[a-z0-9._-]+@[a-z0-9]+$/.test(v)) return;
     const id = setTimeout(async () => {
       const res = await api<{ name: string }>(`/api/vpa?vpa=${encodeURIComponent(v)}`);
-      if (res.ok) setName(res.data.name);
-      else setError(res.error.message);
+      setResult(res.ok ? { vpa: v, name: res.data.name, error: null } : { vpa: v, name: null, error: res.error.message });
     }, 350);
     return () => clearTimeout(id);
-  }, [vpa]);
-  return { name, error };
+  }, [v]);
+  const current = result?.vpa === v ? result : null;
+  return { name: current?.name ?? null, error: current?.error ?? null };
 }
 
 function PayForm({

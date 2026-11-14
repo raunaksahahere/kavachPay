@@ -94,7 +94,7 @@ export function UserApp() {
             <EmptyState title="No demo users yet" hint="Run npm run db:seed to create the synthetic dataset." />
           </div>
         )}
-        {userId && <PhoneApp userId={userId} lang={lang} onLang={pickLang} />}
+        {userId && <PhoneApp key={userId} userId={userId} lang={lang} onLang={pickLang} />}
         {current?.blurb && (
           <aside className="hidden max-w-xs rounded-lg border border-border bg-card p-4 text-sm lg:block">
             <p className="font-semibold">{current.name}</p>

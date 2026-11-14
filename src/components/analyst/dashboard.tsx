@@ -1,7 +1,7 @@
 'use client';
 
 import { Bot, CheckCircle2, FileCheck2, Gauge, Network, ShieldAlert, ShieldX, Wrench, XCircle } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { TopBar } from '@/components/top-bar';
 import { Badge, Button, Card, EmptyState, Spinner, Textarea, cn } from '@/components/ui';
 import { api, rupees, timeAgo } from '@/lib/client/api';
@@ -16,14 +16,23 @@ const TABS: { key: Tab; label: string; Icon: typeof Gauge }[] = [
   { key: 'copilot', label: 'AI copilot', Icon: Bot },
 ];
 
-export function AnalystDashboard() {
-  const [tab, setTab] = useState<Tab>('flagged');
-  const [networkFor, setNetworkFor] = useState<string | null>(null);
+const subscribeToUrl = (cb: () => void) => {
+  window.addEventListener('popstate', cb);
+  return () => window.removeEventListener('popstate', cb);
+};
 
-  useEffect(() => {
-    const fromUrl = new URLSearchParams(window.location.search).get('tab') as Tab | null;
-    if (fromUrl && TABS.some((t) => t.key === fromUrl)) setTab(fromUrl);
-  }, []);
+/** The tab named in ?tab=, read without an effect so it is correct after hydration. */
+function useUrlTab(): Tab | null {
+  const search = useSyncExternalStore(subscribeToUrl, () => window.location.search, () => '');
+  const fromUrl = new URLSearchParams(search).get('tab');
+  return TABS.some((t) => t.key === fromUrl) ? (fromUrl as Tab) : null;
+}
+
+export function AnalystDashboard() {
+  const urlTab = useUrlTab();
+  const [chosen, setTab] = useState<Tab | null>(null);
+  const tab = chosen ?? urlTab ?? 'flagged';
+  const [networkFor, setNetworkFor] = useState<string | null>(null);
 
   function go(next: Tab) {
     setTab(next);
@@ -142,21 +151,35 @@ function Flagged({ onNetwork }: { onNetwork: (accountId: string) => void }) {
   const [rows, setRows] = useState<FlaggedRow[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const [reloads, setReloads] = useState(0);
+  const load = useCallback(() => {
     setRows(null);
-    const r = await api<{ items: FlaggedRow[] }>(`/api/analyst/flagged?limit=100${decision ? `&decision=${decision}` : ''}`);
-    setRows(r.ok ? r.data.items : []);
-  }, [decision]);
+    setReloads((n) => n + 1);
+  }, []);
   useEffect(() => {
-    void load();
-  }, [load]);
+    let alive = true;
+    void api<{ items: FlaggedRow[] }>(`/api/analyst/flagged?limit=100${decision ? `&decision=${decision}` : ''}`).then(
+      (r) => alive && setRows(r.ok ? r.data.items : []),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [decision, reloads]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_420px]">
       <Card className="overflow-hidden">
         <div className="flex items-center gap-2 border-b border-border p-3">
           {(['', 'hold', 'warn'] as const).map((d) => (
-            <Button key={d || 'all'} size="sm" variant={decision === d ? 'primary' : 'outline'} onClick={() => setDecision(d)}>
+            <Button
+              key={d || 'all'}
+              size="sm"
+              variant={decision === d ? 'primary' : 'outline'}
+              onClick={() => {
+                setRows(null);
+                setDecision(d);
+              }}
+            >
               {d === '' ? 'All flagged' : d === 'hold' ? 'Held' : 'Warned'}
             </Button>
           ))}
@@ -220,7 +243,7 @@ function Flagged({ onNetwork }: { onNetwork: (accountId: string) => void }) {
           </div>
         )}
       </Card>
-      <TxnDetail id={selected} onNetwork={onNetwork} />
+      <TxnDetail key={selected ?? 'none'} id={selected} onNetwork={onNetwork} />
     </div>
   );
 }
@@ -229,7 +252,6 @@ function TxnDetail({ id, onNetwork }: { id: string | null; onNetwork: (accountId
   const [d, setD] = useState<Detail | null>(null);
   useEffect(() => {
     if (!id) return;
-    setD(null);
     void api<Detail>(`/api/analyst/txn/${id}`).then((r) => r.ok && setD(r.data));
   }, [id]);
 
@@ -332,7 +354,7 @@ function MuleNetwork({ initial }: { initial: string | null }) {
   const [suspects, setSuspects] = useState<Suspect[] | null>(null);
   const [accountId, setAccountId] = useState<string | null>(initial);
   const [data, setData] = useState<NetworkData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const loading = accountId !== null && data?.profile.accountId !== accountId;
   const [view, setView] = useState<'graph' | 'table'>('graph');
 
   useEffect(() => {
@@ -345,9 +367,7 @@ function MuleNetwork({ initial }: { initial: string | null }) {
 
   useEffect(() => {
     if (!accountId) return;
-    setLoading(true);
     void api<NetworkData>(`/api/analyst/network?accountId=${accountId}&hops=3`).then((r) => {
-      setLoading(false);
       if (r.ok) setData(r.data);
     });
   }, [accountId]);
