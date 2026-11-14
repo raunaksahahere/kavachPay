@@ -1,0 +1,44 @@
+# dependencies
+node_modules/
+.pnp.*
+.yarn/
+
+# next.js / build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# env and secrets
+.env
+.env.*
+!.env.example
+
+# local tooling (never committed)
+.claude/
+CLAUDE.md
+
+# tests and reports
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# caches
+.cache/
+.ai-cache/
+.vercel/
+.turbo/
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# logs
+*.log
+npm-debug.log*
