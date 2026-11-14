@@ -1,5 +1,8 @@
+import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata, Viewport } from 'next';
+import { AuthEnabledProvider } from '@/components/auth-context';
 import { RegisterServiceWorker } from '@/components/register-sw';
+import { authEnabled } from '@/config/auth';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -27,7 +30,14 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en">
       <body className="min-h-dvh antialiased">
-        {children}
+        {/* With Cache Components, Clerk's provider goes inside <body>. */}
+        {authEnabled() ? (
+          <ClerkProvider>
+            <AuthEnabledProvider enabled>{children}</AuthEnabledProvider>
+          </ClerkProvider>
+        ) : (
+          <AuthEnabledProvider enabled={false}>{children}</AuthEnabledProvider>
+        )}
         <RegisterServiceWorker />
       </body>
     </html>

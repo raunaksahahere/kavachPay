@@ -1,7 +1,9 @@
+import { auth } from '@clerk/nextjs/server';
 import { unstable_rethrow } from 'next/navigation';
 import { connection } from 'next/server';
 import { z, ZodError } from 'zod';
 import { APP_CONFIG } from '@/config/app';
+import { authEnabled } from '@/config/auth';
 import { getDb } from '@/db/client';
 import { AppError } from '@/lib/errors';
 import { enforceRateLimit, type RateLimitRule } from '@/lib/security/rate-limit';
@@ -12,10 +14,15 @@ import { enforceRateLimit, type RateLimitRule } from '@/lib/security/rate-limit'
  * status, anything else a generic 500; Next.js's own control-flow errors are
  * passed through untouched.
  */
-export function handle<Ctx>(fn: (req: Request, ctx: Ctx) => Promise<Response>) {
+export function handle<Ctx>(fn: (req: Request, ctx: Ctx) => Promise<Response>, opts: { public?: boolean } = {}) {
   return async (req: Request, ctx: Ctx): Promise<Response> => {
     await connection();
     try {
+      // Defence in depth: the proxy already requires sign-in; check again here.
+      if (authEnabled() && !opts.public) {
+        const { userId } = await auth();
+        if (!userId) throw new AppError(401, 'unauthenticated', 'Please sign in.');
+      }
       return await fn(req, ctx);
     } catch (err) {
       unstable_rethrow(err);

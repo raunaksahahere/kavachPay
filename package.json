@@ -19,6 +19,7 @@
     "pdf": "node scripts/build-idea-pdf.mjs"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.10.0",
     "@google/genai": "^3.3.0",
     "@node-rs/argon2": "^2.2.2",
     "clsx": "^2.1.1",

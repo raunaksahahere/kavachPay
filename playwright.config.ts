@@ -27,6 +27,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/status`,
     timeout: 180_000,
     reuseExistingServer: false,
-    env: { DATABASE_URL: E2E_DATABASE_URL, AI_DISABLED: '1' },
+    env: { DATABASE_URL: E2E_DATABASE_URL, AI_DISABLED: '1', AUTH_DISABLED: '1' },
   },
 });

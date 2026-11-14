@@ -3,6 +3,7 @@
 import { LayoutDashboard, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { AccountMenu } from '@/components/auth-context';
 import { Badge, ShieldLogo, cn } from '@/components/ui';
 import { api } from '@/lib/client/api';
 
@@ -55,6 +56,7 @@ export function TopBar({ active, children }: { active: 'app' | 'analyst'; childr
         <div className="ml-auto flex min-w-0 items-center gap-2">
           {children}
           <AiStatusBadge />
+          <AccountMenu />
         </div>
       </div>
     </header>
