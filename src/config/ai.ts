@@ -35,11 +35,11 @@ export const AI_CONFIG = {
     points: {
       asksForPinOrOtp: 15,
       /** Message claims the user will receive money while the action is an outgoing payment. */
-      claimsReceiveOnOutgoing: 10,
-      scamTypeIdentified: 8,
+      claimsReceiveOnOutgoing: 15,
+      scamTypeIdentified: 10,
       impersonation: 5,
       /** Two or more urgency cues. */
-      urgency: 4,
+      urgency: 5,
     },
   },
 } as const;

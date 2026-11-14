@@ -19,11 +19,11 @@ export const RISK_CONFIG = {
 
   /** Points added when a rule fires. Tuned on the synthetic eval set. */
   weights: {
-    R1_DIRECTION_MISMATCH: 40,
-    R2_NEW_PAYEE: 10,
+    R1_DIRECTION_MISMATCH: 45,
+    R2_NEW_PAYEE: 5,
     R3_AMOUNT_ANOMALY: 20,
-    R4_VELOCITY: 35,
-    R5_YOUNG_PAYEE: 20,
+    R4_VELOCITY: 50,
+    R5_YOUNG_PAYEE: 25,
     R6_MULE_FAN_IN: 40,
     R7_PASS_THROUGH: 25,
   },
@@ -66,7 +66,7 @@ export const RISK_CONFIG = {
   /** R4: more than maxOutgoing payments started by the payer inside the window. */
   r4: {
     windowMinutes: 10,
-    maxOutgoing: 4,
+    maxOutgoing: 3,
   },
 
   /** R5: payee account opened fewer than this many days ago. */
