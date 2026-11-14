@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function openAsha(page: Page) {
-  await page.goto('/');
+  await page.goto('/app');
   const switcher = page.getByTestId('user-switcher');
   await expect(switcher).toBeVisible();
   await switcher.selectOption({ label: 'Asha Devi' });
@@ -58,7 +58,7 @@ test('the same screen speaks Hindi, and a genuine shop request goes through with
 });
 
 test('a wrong PIN is refused and no money moves', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await page.getByTestId('user-switcher').selectOption({ label: 'Ravi Kumar' });
   await page.getByTestId('lang-en').click();
   const before = await balanceText(page);

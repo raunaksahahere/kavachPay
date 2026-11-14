@@ -6,8 +6,9 @@ export function authEnabled(): boolean {
   return process.env.AUTH_DISABLED !== '1';
 }
 
-/** Pages that work without a session: sign-in, sign-up, the demo-trial picker and PWA files. */
+/** Pages that work without a session: the homepage, sign-in, sign-up, the demo-trial picker and PWA files. */
 export const PUBLIC_ROUTES = [
+  '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/demo(.*)',

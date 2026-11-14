@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Kavach Pay',
     short_name: 'Kavach Pay',
     description: 'UPI-style payments with a fraud shield that speaks up before money leaves your account.',
-    start_url: '/',
+    start_url: '/app',
     scope: '/',
     display: 'standalone',
     orientation: 'portrait',

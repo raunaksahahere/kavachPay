@@ -93,7 +93,7 @@ test('the app is installable: manifest, icons and service worker', async ({ requ
   const m = await manifest.json();
   expect(m.name).toBe('Kavach Pay');
   expect(m.display).toBe('standalone');
-  expect(m.start_url).toBe('/');
+  expect(m.start_url).toBe('/app');
   expect(m.icons.map((i: { sizes: string }) => i.sizes)).toEqual(expect.arrayContaining(['192x192', '512x512']));
   for (const icon of m.icons) expect((await request.get(icon.src)).ok()).toBe(true);
 

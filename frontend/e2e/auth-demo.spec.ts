@@ -9,7 +9,7 @@ async function useDemoAccount(page: Page, name: string) {
 }
 
 test('signed-out visitors land on sign-in, with demo trial and install buttons; APIs refuse them', async ({ page, request }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expect(page).toHaveURL(/\/sign-in/, { timeout: 90_000 });
   await expect(page.getByTestId('demo-trial')).toBeVisible();
   await expect(page.getByTestId('install-app')).toBeVisible();

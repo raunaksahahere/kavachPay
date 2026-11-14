@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import { cn } from '@/components/ui';
+import { clsx as cn } from 'clsx';
 
 export type EditorialArtKind = 'risk' | 'network' | 'audit' | 'copilot' | 'payment' | 'activity';
 

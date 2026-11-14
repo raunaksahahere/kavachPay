@@ -8,7 +8,7 @@ export default function SignUpPage() {
     <AuthScreen>
       {/* Clerk reads the URL, so with Cache Components it renders inside Suspense. */}
       <Suspense fallback={<Spinner />}>
-        <SignUp />
+        <SignUp fallbackRedirectUrl="/app" signInFallbackRedirectUrl="/app" />
       </Suspense>
     </AuthScreen>
   );

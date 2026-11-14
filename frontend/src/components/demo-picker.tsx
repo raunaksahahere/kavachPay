@@ -26,7 +26,7 @@ export function DemoPicker() {
     setBusy(userId);
     setError(null);
     const r = await api('/api/demo-session', { body: { userId } });
-    if (r.ok) reloadTo('/');
+    if (r.ok) reloadTo('/app');
     else {
       setBusy(null);
       setError(r.error.message);

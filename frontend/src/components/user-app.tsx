@@ -152,7 +152,7 @@ function ExitDemo() {
       onClick={async () => {
         setBusy(true);
         await fetch('/api/demo-session', { method: 'DELETE' }).catch(() => null);
-        reloadTo('/');
+        reloadTo('/sign-in');
       }}
       data-testid="exit-demo"
     >

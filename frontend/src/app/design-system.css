@@ -198,3 +198,86 @@ button:disabled { cursor:not-allowed; }
 .kavach-priority{padding:16px}.kavach-priority-list{display:grid;margin-top:10px}.kavach-priority-row{display:flex;align-items:center;gap:11px;min-width:0;border:0;border-top:1px solid #efede8;background:transparent;padding:11px 2px;text-align:left;cursor:pointer}.kavach-priority-row:hover{background:#faf6ec}.kavach-priority-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#ffb52e}.kavach-priority-dot.hold{background:#ef765f}.kavach-priority-person{display:grid;min-width:0;flex:1}.kavach-priority-person b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}.kavach-priority-person small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#777982;font-size:9px}.kavach-priority-amount{font-size:10px;font-weight:700;white-space:nowrap}
 @media(max-width:760px){.kavach-overview__charts{grid-template-columns:1fr}.kavach-decision-chart{min-height:170px}}
 @media(max-width:520px){.kavach-overview__heading{align-items:flex-start;flex-direction:column}.kavach-overview__action{align-self:stretch}.kavach-priority-row{gap:7px}.kavach-volume-chart{gap:2px}.kavach-volume-column small{font-size:7px}}
+/* Public homepage — reuses the analyst hero, eyebrow and card language. */
+.kavach-home{min-height:100dvh;background:var(--background);overflow-x:clip}
+.kavach-home-nav{position:sticky;top:0;z-index:30;border-bottom:1px solid var(--border);background:rgba(255,253,249,.92);backdrop-filter:blur(10px)}
+.kavach-home-nav__inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:20px;min-height:64px;padding:0 24px}
+.kavach-home-nav__brand{display:flex;align-items:center;gap:10px;color:var(--foreground)}
+.kavach-home-nav__brand strong,.kavach-home-nav__brand small{display:block}
+.kavach-home-nav__brand strong{font:800 14px/1.1 Manrope,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.kavach-home-nav__brand small{margin-top:3px;color:#777982;font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.kavach-home-nav__links{display:flex;gap:4px;margin-left:12px}
+.kavach-home-nav__links a,.kavach-home-nav__link{border-radius:9px;padding:8px 12px;color:#55575f;font-size:13px;font-weight:700;transition:background .16s ease,color .16s ease}
+.kavach-home-nav__links a:hover,.kavach-home-nav__link:hover{background:#e9ecfa;color:#414f78}
+.kavach-home-nav__auth{margin-left:auto;display:flex;align-items:center;gap:8px}
+.kavach-home-nav__cta{border-radius:9px;background:var(--accent);color:#202127;padding:8px 14px;font-size:13px;font-weight:800;transition:background .16s ease}
+.kavach-home-nav__cta:hover{background:#f2a91f}
+.kavach-home-main{max-width:1200px;margin:0 auto;padding:24px 24px 8px;display:grid;gap:56px}
+.kavach-home-hero{min-height:360px}
+.kavach-home-hero .kavach-hero-copy{padding:44px 40px;max-width:720px}
+.kavach-home-hero .kavach-hero-copy h1{font-size:clamp(30px,4.2vw,52px)}
+.kavach-home-hero .kavach-hero-copy p{font-size:14px;max-width:560px}
+.kavach-home-hero .kavach-shield-illustration{width:190px;height:200px}
+.kavach-home-hero .orbit-one{width:250px;height:250px}.kavach-home-hero .orbit-two{width:330px;height:330px}
+.kavach-home-hero__actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.kavach-home-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:11px;padding:0 18px;font-size:14px;font-weight:800;transition:background .16s ease,transform .16s ease}
+.kavach-home-btn:active{transform:scale(.985)}
+.kavach-home-btn--accent{background:var(--accent);color:#202127}.kavach-home-btn--accent:hover{background:#f2a91f}
+.kavach-home-btn--ghost{border:1px solid #ffffff66;color:#fffdf7}.kavach-home-btn--ghost:hover{background:#ffffff1f}
+.kavach-home-btn--outline{border:1px solid var(--border);background:var(--card);color:var(--foreground)}.kavach-home-btn--outline:hover{background:var(--muted)}
+.kavach-home-btn--dark{background:#202127;color:#fffdf7;min-height:38px;font-size:12px}
+.kavach-home-example{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,420px);gap:40px;align-items:center}
+.kavach-home-example h2,.kavach-home-section h2,.kavach-home-cta h2{margin:8px 0 10px;font:800 clamp(24px,2.8vw,34px)/1.12 Manrope,sans-serif;letter-spacing:-.045em}
+.kavach-home-example p:not(.kavach-eyebrow-text){margin:0;color:#5f616a;font-size:14px;line-height:1.7;max-width:520px}
+.kavach-home-warning{border:1px solid var(--danger-border);border-radius:18px;background:var(--card);padding:20px;box-shadow:0 18px 40px rgba(45,55,80,.1);transform:rotate(-1deg)}
+.kavach-home-warning__head{display:flex;align-items:center;gap:8px;color:var(--danger);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.kavach-home-warning__tag{margin-left:auto;border-radius:999px;background:var(--muted);color:#85868d;padding:2px 8px;font-size:9px;letter-spacing:.1em}
+.kavach-home-warning strong{display:block;margin:14px 0 8px;font:800 17px/1.35 Manrope,sans-serif;letter-spacing:-.02em}
+.kavach-home-warning p{margin:0;color:#5f616a;font-size:13px;line-height:1.6}
+.kavach-home-warning__actions{display:flex;align-items:center;gap:14px;margin-top:16px}
+.kavach-home-warning__muted{color:#596cae;font-size:12px;font-weight:800}
+.kavach-home-section{display:grid;gap:20px}
+.kavach-home-section .kavach-overview__heading p:not(.kavach-eyebrow-text){font-size:13px}
+.kavach-home-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.kavach-home-card{position:relative;border:1px solid var(--border);border-radius:18px;background:var(--card);padding:18px 20px 22px;box-shadow:0 4px 18px rgba(39,37,29,.045)}
+.kavach-home-card__art{max-width:170px;margin:0 auto 6px}
+.kavach-home-card__step{position:absolute;top:16px;left:18px;color:#ef765f;font:800 12px Manrope,sans-serif;letter-spacing:.1em}
+.kavach-home-card h3,.kavach-home-feature h3{margin:0 0 6px;font:800 16px/1.3 Manrope,sans-serif;letter-spacing:-.025em}
+.kavach-home-card p,.kavach-home-feature p{margin:0;color:#6a6c74;font-size:13px;line-height:1.6}
+.kavach-home-features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.kavach-home-feature{border:1px solid var(--border);border-radius:16px;background:var(--card);padding:20px;transition:transform .18s ease,box-shadow .18s ease}
+.kavach-home-feature:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(32,33,39,.08)}
+.kavach-home-feature__icon{display:grid;place-items:center;width:40px;height:40px;margin-bottom:14px;border-radius:12px;background:#e9ecfa;color:#414f78}
+.kavach-home-feature:nth-child(3n+2) .kavach-home-feature__icon{background:var(--accent-soft);color:#9b6612}
+.kavach-home-feature:nth-child(3n) .kavach-home-feature__icon{background:var(--danger-soft);color:var(--danger)}
+.kavach-home-audiences{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.kavach-home-audience{display:flex;align-items:flex-start;gap:16px;border:1px solid var(--border);border-radius:18px;background:var(--card);padding:24px;color:var(--foreground);transition:transform .18s ease}
+.kavach-home-audience:hover{transform:translateY(-2px)}
+.kavach-home-audience h3{margin:0 0 6px;font:800 18px Manrope,sans-serif;letter-spacing:-.03em}
+.kavach-home-audience p{margin:0;color:#6a6c74;font-size:13px;line-height:1.6}
+.kavach-home-audience div{flex:1}
+.kavach-home-audience__arrow{align-self:center;color:#ef765f}
+.kavach-home-audience--dark{border-color:#58698f;background:#58698f;color:#fffdf7}
+.kavach-home-audience--dark p{color:#d7ddef}.kavach-home-audience--dark .kavach-home-audience__arrow{color:#ffb52e}
+.kavach-home-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;border-radius:20px;background:#ffb52e;padding:32px 36px}
+.kavach-home-cta h2{margin-top:0}
+.kavach-home-cta p{margin:0;color:#4a3a14;font-size:14px}
+.kavach-home-cta__actions{display:flex;flex-wrap:wrap;gap:10px}
+.kavach-home-cta .kavach-home-btn--accent{background:#202127;color:#fffdf7}.kavach-home-cta .kavach-home-btn--accent:hover{background:#3a3b43}
+.kavach-home-footer{max-width:1200px;margin:40px auto 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;border-top:1px solid var(--border);padding:22px 24px calc(28px + env(safe-area-inset-bottom));color:#777982;font-size:12px}
+.kavach-home-footer span{display:inline-flex;align-items:center;gap:8px}
+@media(max-width:900px){.kavach-home-steps,.kavach-home-features{grid-template-columns:1fr 1fr}.kavach-home-example{grid-template-columns:1fr}}
+@media(max-width:700px){
+ .kavach-home-nav__links{display:none}
+ .kavach-home-nav__inner{padding:0 16px;gap:10px}
+ .kavach-home-nav__brand small{display:none}
+ .kavach-home-main{padding:16px 16px 8px;gap:40px}
+ .kavach-home-hero .kavach-hero-copy{padding:26px 20px 8px}
+ .kavach-home-hero .kavach-shield-illustration{width:110px;height:118px}
+ .kavach-home-hero .orbit-one{width:140px;height:140px}.kavach-home-hero .orbit-two{width:190px;height:190px}
+ .kavach-home-steps,.kavach-home-features,.kavach-home-audiences{grid-template-columns:1fr}
+ .kavach-home-cta{flex-direction:column;align-items:flex-start;padding:24px 20px}
+ .kavach-home-warning{transform:none}
+ .kavach-home-footer{padding-left:16px;padding-right:16px}
+}
+@media(max-width:380px){.kavach-home-nav__brand span{display:none}}

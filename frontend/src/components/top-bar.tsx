@@ -37,7 +37,7 @@ export function TopBar({ active, children }: { active: 'app' | 'analyst'; childr
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           {[
-            { href: '/', key: 'app', label: 'User app', Icon: Smartphone },
+            { href: '/app', key: 'app', label: 'User app', Icon: Smartphone },
             { href: '/analyst', key: 'analyst', label: 'Analyst', Icon: LayoutDashboard },
           ].map((n) => (
             <Link
