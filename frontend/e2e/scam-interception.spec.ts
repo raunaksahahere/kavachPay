@@ -95,6 +95,23 @@ test('typed amount mismatch on a warned payment cannot settle', async ({ page })
   await page.getByRole('button', { name: 'Done' }).click();
 });
 
+test('payment API failure stays a failure and never renders a success state', async ({ page }) => {
+  await openAsha(page);
+  await page.getByTestId('lang-en').click();
+  await page.route('**/api/payments', (route) => route.fulfill({
+    status: 503,
+    contentType: 'application/json',
+    body: JSON.stringify({ error: { code: 'service_unavailable', message: 'Service temporarily unavailable.' } }),
+  }));
+  await page.getByTestId('action-pay').click();
+  await page.getByTestId('pay-vpa').fill('sharmakirana@kavach');
+  await expect(page.getByTestId('payee-name')).toBeVisible();
+  await page.getByTestId('pay-amount').fill('120');
+  await page.getByTestId('pay-continue').click();
+  await expect(page.getByTestId('payment-failure')).toContainText('Service temporarily unavailable.');
+  await expect(page.getByTestId('payment-finished')).toHaveCount(0);
+});
+
 test('the analyst can see the held payment, the mule ring and a verified audit chain', async ({ page }) => {
   await page.goto('/analyst');
   await page.getByTestId('tab-flagged').click();

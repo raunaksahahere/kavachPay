@@ -138,7 +138,7 @@ function Overview({ onInvestigate }: { onInvestigate: (id?: string) => void }) {
   const warnPercent = total ? (stats!.warned / total) * 100 : 0;
   return <section className="kavach-overview" aria-label="Live intelligence overview">
     <div className="kavach-overview__heading"><div><p className="kavach-eyebrow-text">LIVE INTELLIGENCE · DATABASE METRICS</p><h2>Good morning, team.</h2><p>Real payment decisions from the Kavach risk engine.</p></div><button type="button" className="kavach-overview__action" onClick={() => onInvestigate()}>Open risk monitor <span>→</span></button></div>
-    <Stats />
+    <Stats data={stats} />
     <div className="kavach-overview__charts">
       <Card className="kavach-chart-card"><div className="kavach-chart-title"><div><h3>Transaction volume</h3><p>Risk-scored payments · last 12 hours</p></div><Badge tone="accent">LIVE</Badge></div>
         <div className="kavach-volume-chart" role="img" aria-label={`Transaction volume over 12 hours. ${total} decisions total.`}>
@@ -156,11 +156,7 @@ function Overview({ onInvestigate }: { onInvestigate: (id?: string) => void }) {
   </section>;
 }
 
-function Stats() {
-  const [s, setS] = useState<StatsData | null>(null);
-  useEffect(() => {
-    void api<StatsData>('/api/analyst/stats').then((r) => r.ok && setS(r.data));
-  }, []);
+function Stats({ data: s }: { data: StatsData | null }) {
   const tiles = s
     ? [
         { label: 'Payments scored', value: s.transactions.toLocaleString('en-IN') },
