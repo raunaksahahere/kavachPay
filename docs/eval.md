@@ -51,7 +51,7 @@ Thresholds: warn at 30, hold at 70. Weights: R4=50, R2=5, R5=25, R6=40, R7=25, R
 
 ## 2. What Gemini adds (R8)
 
-Run at 2026-11-14T04:38:54.589Z with model `gemini-3.5-flash-lite`.
+Run at 2026-11-14T04:43:57.041Z with model `gemini-3.5-flash-lite`.
 
 ### End to end: the same payments, with and without R8
 
@@ -76,24 +76,24 @@ Gemini analysed the 43 distinct payment notes in the dataset (0 failed and were 
 | takeover_burst | fraud | 28 | 16 | 11 | 57.1% |
 | legit_burst | legit | 26 | 8 | 0 | 30.8% |
 | legit_collect | legit | 180 | 0 | 0 | 0.0% |
-| legit_collect_tricky_note | legit | 18 | 12 | 6 | 66.7% |
+| legit_collect_tricky_note | legit | 18 | 12 | 0 | 66.7% |
 | legit_everyday | legit | 3694 | 0 | 0 | 0.0% |
 | legit_high_value | legit | 69 | 0 | 0 | 0.0% |
 | legit_p2p | legit | 887 | 0 | 0 | 0.0% |
 
 ### Extractor accuracy (G1)
 
-86 labelled synthetic items in `eval/messages/` (80 texts, 6 screenshots); 86 returned a schema-valid answer, 0 did not (timeout, error or invalid output) and count as wrong.
-Screenshots: scam type correct on 6 of 6.
+86 labelled synthetic items in `eval/messages/` (80 texts, 6 screenshots); 85 returned a schema-valid answer, 1 did not (timeout, error or invalid output) and count as wrong.
+Screenshots: scam type correct on 5 of 6.
 
 | Field | Correct | Accuracy |
 |---|---:|---:|
-| `scam_type` | 84 / 86 | 97.7% |
-| `asks_for_pin_or_otp` | 84 / 86 | 97.7% |
-| `money_direction_claimed` | 73 / 77 | 94.8% |
+| `scam_type` | 82 / 86 | 95.3% |
+| `asks_for_pin_or_otp` | 83 / 86 | 96.5% |
+| `money_direction_claimed` | 70 / 77 | 90.9% |
 
-Scam versus legitimate (any scam type versus `none`): precision 100.0%, recall 100.0%, false-positive rate 0.0%.
-Median latency of answered calls: 1114 ms.
+Scam versus legitimate (any scam type versus `none`): precision 100.0%, recall 98.1%, false-positive rate 0.0%.
+Median latency of answered calls: 1189 ms.
 
 ### Grounding check (G2)
 

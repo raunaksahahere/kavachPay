@@ -5,7 +5,7 @@
 1. `npm run db:seed` — resets the data so the demo requests are fresh (timestamps are relative to now).
 2. Start the app (`npm run dev`, or open the deployed URL).
 3. With Gemini on, set `AI_CACHE=1` and walk through steps 2 and 4 once. The results are cached, so the live run works on bad Wi-Fi and shows "cached".
-4. Open two tabs: `/` (user app) and `/analyst`.
+4. Sign in with Clerk, then open two tabs: `/` (user app) and `/analyst`.
 5. Every demo account's UPI PIN is **1234**.
 
 If Gemini is unreachable, the demo still works: the badge in the top bar reads "Rules only (AI off)", and every step below behaves the same except the Gemini-specific lines.

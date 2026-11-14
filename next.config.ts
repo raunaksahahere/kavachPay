@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // The end-to-end tests build into their own folder so they can run beside a dev server.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   cacheComponents: true,
   partialPrefetching: true,
   // Native argon2 binding must be loaded by Node, not bundled.

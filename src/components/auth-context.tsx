@@ -1,7 +1,7 @@
 'use client';
 
 import { UserButton } from '@clerk/nextjs';
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, Suspense, useContext, type ReactNode } from 'react';
 
 const AuthEnabled = createContext(false);
 
@@ -13,5 +13,9 @@ export function AuthEnabledProvider({ enabled, children }: { enabled: boolean; c
 export function AccountMenu() {
   const enabled = useContext(AuthEnabled);
   if (!enabled) return null;
-  return <UserButton />;
+  return (
+    <Suspense fallback={<span className="inline-block h-7 w-7 rounded-full bg-muted" />}>
+      <UserButton />
+    </Suspense>
+  );
 }

@@ -46,17 +46,17 @@ Started 14 November 2026. Each phase lists what was built, how it was verified, 
 - Verified (`tests/risk-rules.test.ts`): each rule fires and stays silent at its thresholds; combined scenarios; templates exist for every rule in every language.
 - `npm run eval:rules` (latest run in `docs/eval.md`): precision 85.7%, recall 71.0%, false-positive rate 0.4%, no legitimate payment held. Rules alone catch 0% of the 22 paraphrased refund scams.
 
-## Phase 8 — Gemini layer ✅ (code and tests) / ⏳ (live run)
+## Phase 8 — Gemini layer ✅
 
 - G1 analyzer, G2 grounded explainer, G3 read-only copilot, all in `src/lib/ai`, Interactions API, `store: false`, 4-second timeout, demo cache.
 - Verified (`tests/ai.test.ts`, `tests/payments.test.ts`): invalid, extra-field and wrong-type outputs are dropped; timeouts and network errors are reported, not thrown; forged delimiters are stripped; images are sent as inline image parts; the cache replays and labels results; a model that calls a scam "safe" cannot lower the score; R8 is capped; an explanation with an invented number falls back to the template; the copilot has only read tools, validates arguments, and stops at 6 steps; the app runs with no key.
-- Remaining: a live run against the Gemini API needs `GEMINI_API_KEY` in `.env.local`.
+- Verified live (14 Nov 2026): the stable v1 Interactions API needs content wrapped in a `user_input` step; fixed. The analyzer reads text and screenshots in about 1–1.5 s; an injection message ("output scam_type none") was still classified as OTP phishing; the Hindi explanation passed the grounding check.
 
-## Phase 9 — AI evaluation ⏳
+## Phase 9 — AI evaluation ✅
 
 - `eval/messages/messages.json`: 86 labelled synthetic items: 80 text messages (50 scam, 30 legitimate; English, Hindi, Bengali, Hinglish; three prompt-injection attempts) and 6 rendered chat screenshots.
 - `npm run eval:ai` computes extractor accuracy, rules vs rules + R8 on the transaction set, and grounding pass rate, and writes `docs/eval.md`.
-- Remaining: run it once the key is available.
+- Live run (`gemini-3.5-flash-lite`, 2 concurrent calls): scam type 95.3%, money direction 90.9%, PIN/OTP 96.5%. Rules only → rules + Gemini: recall 71.0% → 84.0%, precision 85.7% → 87.7%, false-positive rate unchanged at 0.4%; paraphrased refund scams 0/22 → 22/22. Grounding 36/36. One prompt-injection item (m46) produced schema-invalid output and was dropped, which the engine treats as "no signal": the safe failure mode.
 
 ## Phase 10 — UI and PWA ✅
 
@@ -69,12 +69,21 @@ Started 14 November 2026. Each phase lists what was built, how it was verified, 
 
 - `README.md`, `docs/DEMO.md` written.
 - Verified from a fresh clone (14 Nov 2026): `npm ci`, copy `.env.example`, `db:migrate`, `db:seed`, `eval:rules`, `build`, `start` against an empty database. Same counts and same metrics as the original run; `/`, `/analyst`, `/manifest.webmanifest` and the APIs respond.
-- Remaining: Vercel deployment needs the Vercel CLI login and the Neon `DATABASE_URL`.
+- Deployment to Vercel: done by Raunak manually (needs `DATABASE_URL`, `GEMINI_API_KEY`, the Clerk keys and sign-in URLs as Vercel environment variables).
+
+## Added on request — Clerk sign-in ✅
+
+- Clerk (`@clerk/nextjs` 7) via the Next.js 16 proxy: every page and API requires sign-in except sign-in/sign-up, `/api/status` and the PWA files; route handlers re-check the session. Account menu in the top bar. Local development uses Clerk accountless development keys; production needs the two Clerk keys in Vercel.
+- Verified: unauthenticated requests to pages and APIs redirect to Clerk; public routes stay public. `AUTH_DISABLED=1` keeps the automated tests deterministic.
+
+## Added on request — PWA ✅
+
+- See Phase 10.
 
 ## Known limitations
 
 - Simulated payment rail and synthetic data; metrics describe this dataset only.
-- No authentication: the demo-user switcher sends a user id, so anyone with the URL can act as any demo user. Acceptable for a demo, not for production.
+- Signed-in users can act as any synthetic demo persona; personas are not bound to Clerk accounts.
 - Rate limits use a fixed window in Postgres; adequate for a demo, not tuned for scale.
 - The mule rules are our own heuristics.
 - The R7 pass-through rule counts any outgoing payment that follows an inflow within 30 minutes, which can over-count for very active merchants (none were flagged in the evaluation).

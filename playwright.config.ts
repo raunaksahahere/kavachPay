@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 /**
- * End-to-end smoke test. It reseeds its own database (local Postgres by
+ * End-to-end smoke test against a production build. It reseeds its own database (local Postgres by
  * default, never the demo database unless you point E2E_DATABASE_URL at it)
  * and runs with Gemini switched off so the result is deterministic.
  */
@@ -23,10 +23,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: `npx tsx scripts/e2e-prepare.ts && npx next dev -p ${PORT}`,
+    command: `npx tsx scripts/e2e-prepare.ts && npx next build && npx next start -p ${PORT}`,
     url: `http://localhost:${PORT}/api/status`,
-    timeout: 180_000,
+    timeout: 400_000,
     reuseExistingServer: false,
-    env: { DATABASE_URL: E2E_DATABASE_URL, AI_DISABLED: '1', AUTH_DISABLED: '1' },
+    env: { DATABASE_URL: E2E_DATABASE_URL, AI_DISABLED: '1', AUTH_DISABLED: '1', NEXT_DIST_DIR: '.next-e2e' },
   },
 });
