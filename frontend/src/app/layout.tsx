@@ -1,5 +1,6 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata, Viewport } from 'next';
+import type { ReactNode } from 'react';
 import { AuthEnabledProvider } from '@/components/auth-context';
 import { RegisterServiceWorker } from '@/components/register-sw';
 import { authEnabled } from '@/config/auth';
@@ -27,7 +28,11 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <html lang="en">
       <body className="min-h-dvh antialiased">
