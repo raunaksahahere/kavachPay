@@ -123,9 +123,24 @@ A simulated UPI-style payment app in which every payment and collect request pas
 
 All thresholds and weights live in one configuration file and were tuned on the synthetic evaluation set.
 
+<!-- pagebreak -->
+
 ## What are "Gemini signals"?
 
-They are the structured answer Gemini must give when it reads a message or screenshot, enforced by a JSON schema: **scam type** (refund collect, fake QR, KYC phishing, OTP phishing, screen-share, prize, investment, impersonation, other or none), the **claimed purpose**, whether the message says the reader will **receive** or **pay** money, **urgency cues** quoted from the text, the **impersonated entity**, whether it **asks for a PIN or OTP**, any **UPI ID** and **amount** it contains, and a **confidence** from 0 to 1. Anything outside the schema is rejected. Gemini never chooses points; this table does:
+They are the structured answer Gemini must give when it reads a payment note, message or screenshot. A JSON schema enforces the format and anything outside it is rejected.
+
+| Signal | Meaning |
+|---|---|
+| Scam type | One of: refund collect, fake QR, KYC phishing, OTP phishing, screen-share, prize or lottery, investment or job, impersonation, other, or none |
+| Claimed purpose | What the message says the payment is for, in a few words |
+| Money direction | Whether the message tells the reader they will **receive** money, **pay** money, or is unclear |
+| Urgency cues | Phrases quoted from the text that create pressure, such as "today only" or "account will be blocked" |
+| Impersonated entity | Who the sender pretends to be: a bank, police, a courier, customer care, a relative |
+| Asks for PIN or OTP | Whether it asks the reader to enter or share a PIN, OTP, CVV or password |
+| UPI ID and amount | Any UPI ID or rupee amount found in the message |
+| Confidence | Gemini's confidence in the scam type, from 0 to 1 |
+
+Gemini never chooses points; this fixed table does:
 
 | Signal | Points |
 |---|---:|
@@ -154,8 +169,6 @@ They are the structured answer Gemini must give when it reads a message or scree
 | Investigates flagged payments for an analyst through read-only tools, in at most six steps | Every ledger entry, balance, PIN check, state change and the final allow, warn or hold |
 
 Gemini output is treated as untrusted input: validated against a schema, clamped and logged, and dropped if invalid. It can never lower a score, approve a payment, block one on its own, or write to the database. Every call has a four-second timeout; on timeout or error the payment continues on rules alone and the app says "AI check unavailable". Only synthetic data is sent to the API, with server-side storage of requests switched off.
-
-<!-- pagebreak -->
 
 # Why it is impactful
 
