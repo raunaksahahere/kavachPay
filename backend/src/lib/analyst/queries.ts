@@ -298,8 +298,8 @@ export async function dashboardStats(db: DbOrTx) {
   const now = new Date();
   const volumeHours = Array.from({ length: 12 }, (_, i) => {
     const date = new Date(now);
-    date.setMinutes(0, 0, 0);
-    date.setHours(date.getHours() - (11 - i));
+    date.setUTCMinutes(0, 0, 0);
+    date.setUTCHours(date.getUTCHours() - (11 - i));
     const key = date.toISOString().slice(0, 13);
     return { hour: date.toISOString(), ...byHour.get(key) ?? { total: 0, allowed: 0, warned: 0, held: 0 } };
   });
