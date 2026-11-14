@@ -294,7 +294,7 @@ export async function dashboardStats(db: DbOrTx) {
   const byHour = new Map((hours.rows as Row[]).map((row) => [
     String(row.hour),
     { total: Number(row.total), allowed: Number(row.allowed), warned: Number(row.warned), held: Number(row.held) },
-  ]));
+  ] as const));
   const now = new Date();
   const volumeHours = Array.from({ length: 12 }, (_, i) => {
     const date = new Date(now);

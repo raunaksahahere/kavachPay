@@ -100,7 +100,7 @@ describe('service endpoints', () => {
     `)).rows as { hour: string; total: string; allowed: string; warned: string; held: string }[];
     const expected = new Map(rows.map((row) => [row.hour, {
       total: Number(row.total), allowed: Number(row.allowed), warned: Number(row.warned), held: Number(row.held),
-    }]));
+    }] as const));
     expect(stats.volumeHours.map((row: { hour: string; total: number; allowed: number; warned: number; held: number }) => ({
       hour: row.hour.slice(0, 13), total: row.total, allowed: row.allowed, warned: row.warned, held: row.held,
     }))).toEqual(stats.volumeHours.map((row: { hour: string }) => ({
