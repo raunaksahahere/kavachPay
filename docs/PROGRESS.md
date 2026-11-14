@@ -68,6 +68,7 @@ Started 14 November 2026. Each phase lists what was built, how it was verified, 
 ## Phase 11 — Deploy and docs ⏳
 
 - `README.md`, `docs/DEMO.md` written.
+- Verified from a fresh clone (14 Nov 2026): `npm ci`, copy `.env.example`, `db:migrate`, `db:seed`, `eval:rules`, `build`, `start` against an empty database. Same counts and same metrics as the original run; `/`, `/analyst`, `/manifest.webmanifest` and the APIs respond.
 - Remaining: Vercel deployment needs the Vercel CLI login and the Neon `DATABASE_URL`.
 
 ## Known limitations
