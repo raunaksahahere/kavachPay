@@ -58,6 +58,53 @@ const STRINGS = {
     hi: 'क्या इस भुगतान के बारे में कोई संदेश आया था? (वैकल्पिक)',
     bn: 'এই পেমেন্ট নিয়ে কোনো বার্তা পেয়েছেন? (ঐচ্ছিক)',
   },
+  listen: { en: 'Listen to the reason', hi: 'कारण सुनें', bn: 'কারণ শুনুন' },
+  stopListening: { en: 'Stop', hi: 'रोकें', bn: 'থামান' },
+  voiceLoading: { en: 'Preparing audio…', hi: 'आवाज़ तैयार हो रही है…', bn: 'অডিও তৈরি হচ্ছে…' },
+  voiceIn: { en: 'Read aloud in', hi: 'इस भाषा में सुनें', bn: 'এই ভাষায় শুনুন' },
+  txnDetails: { en: 'Transaction', hi: 'लेन-देन', bn: 'লেনদেন' },
+  youSent: { en: 'You sent', hi: 'आपने भेजे', bn: 'আপনি পাঠিয়েছেন' },
+  youReceived: { en: 'You received', hi: 'आपको मिले', bn: 'আপনি পেয়েছেন' },
+  status: { en: 'Status', hi: 'स्थिति', bn: 'অবস্থা' },
+  when: { en: 'When', hi: 'कब', bn: 'কখন' },
+  downloadPdf: { en: 'Download all transactions with this account (PDF)', hi: 'इस खाते के साथ सभी लेन-देन डाउनलोड करें (PDF)', bn: 'এই অ্যাকাউন্টের সঙ্গে সব লেনদেন ডাউনলোড করুন (PDF)' },
+  downloadHint: {
+    en: 'Every payment between you and this account, in both directions, with Kavach risk checks. Attach it to a complaint.',
+    hi: 'आपके और इस खाते के बीच दोनों तरफ़ के सभी भुगतान, कवच जांच के साथ। इसे शिकायत के साथ लगाएं।',
+    bn: 'আপনার ও এই অ্যাকাউন্টের মধ্যে দুই দিকের সব পেমেন্ট, কবচ যাচাই সহ। অভিযোগের সঙ্গে এটি যুক্ত করুন।',
+  },
+  downloaded: { en: 'PDF downloaded', hi: 'PDF डाउनलोड हो गया', bn: 'PDF ডাউনলোড হয়েছে' },
+  report: { en: 'Report this account', hi: 'इस खाते की शिकायत करें', bn: 'এই অ্যাকাউন্টের বিরুদ্ধে অভিযোগ করুন' },
+  reportHint: {
+    en: 'Official government channels. They open in a new tab; Kavach does not send anything for you.',
+    hi: 'आधिकारिक सरकारी माध्यम। ये नए टैब में खुलेंगे; कवच आपकी ओर से कुछ नहीं भेजता।',
+    bn: 'সরকারি অফিসিয়াল মাধ্যম। এগুলো নতুন ট্যাবে খুলবে; কবচ আপনার হয়ে কিছু পাঠায় না।',
+  },
+  reportCybercrime: {
+    en: 'You lost money or were targeted by an online financial fraud.',
+    hi: 'आपके पैसे गए हैं या आप ऑनलाइन वित्तीय धोखाधड़ी का निशाना बने हैं।',
+    bn: 'আপনার টাকা খোয়া গেছে বা আপনি অনলাইন আর্থিক প্রতারণার শিকার হয়েছেন।',
+  },
+  report1930: {
+    en: 'Call right away if money has already left your account.',
+    hi: 'अगर पैसे खाते से निकल चुके हैं तो तुरंत कॉल करें।',
+    bn: 'অ্যাকাউন্ট থেকে টাকা চলে গেলে এখনই ফোন করুন।',
+  },
+  reportChakshu: {
+    en: 'Report the fraud call, SMS or WhatsApp message itself.',
+    hi: 'धोखाधड़ी वाली कॉल, SMS या WhatsApp संदेश की शिकायत करें।',
+    bn: 'প্রতারণার কল, SMS বা WhatsApp বার্তার বিরুদ্ধে অভিযোগ করুন।',
+  },
+  reportRbi: {
+    en: 'Complain about how your bank or payment app handled it.',
+    hi: 'आपके बैंक या पेमेंट ऐप ने मामला कैसे संभाला, इसकी शिकायत करें।',
+    bn: 'আপনার ব্যাংক বা পেমেন্ট অ্যাপ বিষয়টি কীভাবে সামলেছে, তা নিয়ে অভিযোগ করুন।',
+  },
+  stCompleted: { en: 'Completed', hi: 'पूरा हुआ', bn: 'সম্পন্ন' },
+  stOnHold: { en: 'On hold', hi: 'रोका गया', bn: 'আটকে আছে' },
+  stPending: { en: 'Pending', hi: 'बाकी', bn: 'অপেক্ষমাণ' },
+  stNotCompleted: { en: 'Not completed (failed or cancelled)', hi: 'पूरा नहीं हुआ (विफल या रद्द)', bn: 'সম্পন্ন হয়নি (ব্যর্থ বা বাতিল)' },
+  stReversed: { en: 'Reversed', hi: 'वापस किया गया', bn: 'ফেরত দেওয়া হয়েছে' },
 } as const;
 
 export type StringKey = keyof typeof STRINGS;

@@ -101,6 +101,16 @@ export function openApiDocument(version: string) {
         }),
       },
       '/api/payments/{id}/cancel': { post: op('Payments', 'Cancel a payment that has not settled', { parameters: [idParam], requestBody: json({ type: 'object', properties: { userId } }) }) },
+      '/api/payments/{id}/voice': {
+        get: op('Payments', 'Read the risk decision for one of your payments aloud (ElevenLabs, audio/mpeg); 503 when no ElevenLabs key is set', {
+          parameters: [idParam, { name: 'lang', in: 'query', required: true, schema: { type: 'string', enum: ['en', 'hi', 'bn'] } }],
+        }),
+      },
+      '/api/transactions/{id}/statement': {
+        get: op('Payments', 'PDF of every transaction between you and the other party of this transaction, with official places to report fraud', {
+          parameters: [idParam],
+        }),
+      },
       '/api/collect': {
         post: op('Payments', 'Request money from a UPI ID', {
           parameters: [idemHeader],

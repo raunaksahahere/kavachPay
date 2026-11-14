@@ -14,6 +14,8 @@ const schema = z.object({
   AUTH_DISABLED: z.enum(['0', '1']).optional(),
   CLERK_SECRET_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
+  /** ElevenLabs key for reading risk reasons aloud. Optional: without it the Listen button reports voice unavailable. */
+  ELEVENLABS_API_KEY: z.string().optional(),
   /** Run pending database migrations when the server starts. */
   MIGRATE_ON_START: z.enum(['0', '1']).default('1'),
 });

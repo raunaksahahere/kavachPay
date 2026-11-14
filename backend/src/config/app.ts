@@ -28,6 +28,9 @@ export const APP_CONFIG = {
     payment: { max: 20, windowSeconds: 60 },
     pin: { max: 10, windowSeconds: 60 },
     ai: { max: 20, windowSeconds: 60 },
+    /** Each spoken clip may cost ElevenLabs credits. */
+    voice: { max: 10, windowSeconds: 60 },
+    report: { max: 10, windowSeconds: 60 },
   },
 
   /** How long a stored idempotent response is replayed. */

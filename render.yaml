@@ -26,6 +26,8 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
       # The deployed frontend URL(s), comma-separated, e.g. https://kavach-pay.vercel.app
       - key: FRONTEND_ORIGINS
         sync: false
