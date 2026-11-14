@@ -273,7 +273,7 @@ export async function listSuspiciousPayees(db: DbOrTx, limit = 12) {
 export async function dashboardStats(db: DbOrTx) {
   const result = await db.execute(sql`
     SELECT
-      (SELECT count(*) FROM transactions WHERE type <> 'funding') AS total,
+      (SELECT count(*) FROM transactions WHERE risk_decision IS NOT NULL) AS total,
       (SELECT count(*) FROM transactions WHERE risk_decision = 'warn') AS warned,
       (SELECT count(*) FROM transactions WHERE risk_decision = 'hold') AS held,
       (SELECT COALESCE(sum(amount_paise),0) FROM transactions WHERE status IN ('held','failed') AND risk_decision = 'hold') AS stopped_paise,
