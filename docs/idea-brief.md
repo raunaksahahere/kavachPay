@@ -56,6 +56,21 @@ RBI's data makes the stakes clear: payments above ₹10,000 are about 45% of rep
 
 - **Bank and PSP fraud and risk teams.** They get every flagged payment with the exact rules that fired, a network view of a suspected mule ring, a tamper-evident audit trail, and a copilot that investigates using read-only tools.
 
+# How it differs from GPay, PhonePe and other UPI apps
+
+Kavach Pay is not another payment app. It is the **decision layer a payment app or bank would embed at the moment of approval**, just before the PIN.
+
+| | What public reporting shows today | What Kavach Pay adds |
+|---|---|---|
+| Risk signal | A risk rating for the payee's mobile number (DoT's Financial Fraud Risk Indicator); PhonePe blocks "Very High" risk numbers [8] | A score for this specific payment: collect direction, first payment to this payee, amount against the user's own history, payee account age, fan-in and pass-through |
+| Friction | P2P collect removed for everyone [7]; a proposed one-hour lag on transfers of about ₹10,000 and above [2] | Friction only where the evidence is: the rent goes through, the "refund" is held |
+| Mule knowledge | Detected on the bank's side, e.g. MuleHunter.AI in 23 banks by December 2025 [10] | Shown to the payer as a reason, before money leaves |
+| Warning | Awareness advice such as RBI's booklet [5] | The exact reasons, with the numbers, in English, Hindi or Bengali |
+
+The AI layer reads scam messages and screenshots, can only add caution, never approve or lower a score, and its contribution is measured and reported. These apps' internal fraud systems are not public, so this comparison uses published reporting only; Kavach Pay shows the approach and does not claim to replace them.
+
+<!-- pagebreak -->
+
 # Why we chose this idea
 
 **Fit with the Fintech track**
@@ -72,8 +87,6 @@ RBI's data makes the stakes clear: payments above ₹10,000 are about 45% of rep
 **Demo strength.** One moment a judge understands in thirty seconds: a "₹4,999 refund" request, a tap on Approve, and the app stopping the payment with the reason.
 
 **Why this track and not the others.** We chose on three tests: can we build the real core in ten hours instead of mocking it, can we prove correctness with tests and measured numbers, and is there a live moment that needs no explanation. Fraud mitigation in payments was the option where we could answer yes to all three.
-
-<!-- pagebreak -->
 
 # What we aim to build
 
@@ -130,7 +143,7 @@ No target numbers are stated here. Every figure we present will be the output of
 - **Synthetic data.** Users, transactions and messages are generated. Thresholds are tuned on that data, so our metrics describe this dataset and are not a prediction of production performance.
 - **Our own heuristics.** The mule rules are our design. RBI's list of mule indicators is not public [10].
 - **Cloud AI dependency.** Gemini needs a network connection and an API quota; the rules-only path is the fallback.
-- **Prototype scope.** No login system (a demo-user switcher instead), no security audit, built in a ten-hour hackathon.
+- **Prototype scope.** Clerk sign-in protects the app, but the demo personas are shared synthetic accounts; no security audit; built in a hackathon.
 
 # Sources
 
