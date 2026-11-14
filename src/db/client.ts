@@ -1,6 +1,15 @@
+import dns from 'node:dns';
+import net from 'node:net';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema';
+
+// Node's default "happy eyeballs" races IPv4 and IPv6 with a 250 ms budget per
+// address. On a network with no IPv6 route and a slow link to the database,
+// every attempt is cut off (AggregateError / ECONNRESET). Prefer IPv4 and try
+// one address at a time, which is reliable on slow and IPv4-only networks.
+dns.setDefaultResultOrder('ipv4first');
+net.setDefaultAutoSelectFamily(false);
 
 export type Db = NodePgDatabase<typeof schema>;
 export type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -31,7 +40,7 @@ export function getDb(): Db {
     connectionString: url,
     max: Number(process.env.DATABASE_POOL_MAX ?? 10),
     idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 30_000,
   });
   const db = drizzle(pool, { schema });
   globalForDb.__kavachDb = { pool, db, url };
