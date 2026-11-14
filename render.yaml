@@ -1,0 +1,33 @@
+# Render Blueprint: deploys the Kavach Pay API (backend/) as a Docker web service.
+# In Render: New → Blueprint → pick this repository. Render asks for each `sync: false` value once.
+# Field names follow https://render.com/docs/blueprint-spec (paths are relative to the repo root).
+services:
+  - type: web
+    name: kavach-pay-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    # Same region as the Neon database (ap-southeast-1). Cannot be changed after creation.
+    region: singapore
+    # "free" sleeps after ~15 minutes idle (the first request then takes ~30-50 s).
+    # For judging, switch to a paid plan such as 0.5c-512mb so it stays awake.
+    plan: free
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MIGRATE_ON_START
+        value: "1"
+      - key: DATABASE_URL
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      # The deployed frontend URL(s), comma-separated, e.g. https://kavach-pay.vercel.app
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: DEMO_SESSION_SECRET
+        generateValue: true

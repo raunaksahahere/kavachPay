@@ -13,53 +13,57 @@ Built for the HackMatrix hackathon, Financial Technology & Payments track (fraud
 
 ---
 
-## Quick start
+## Repository layout
 
-Requires Node.js 22 or later and a Postgres database (a [Neon](https://neon.tech) URL, or the local container below).
+```
+backend/    Kavach Pay API: Node + Hono, Postgres (Drizzle), risk engine, Gemini layer, audit log.
+            Dockerfile, OpenAPI docs at /docs, tests, seed and evaluation scripts.
+frontend/   Next.js app (phone-style user app + analyst dashboard, PWA). Forwards /api/* to the backend.
+docs/       Research, idea brief, evaluation, demo script, progress log.
+render.yaml Render Blueprint that deploys backend/ as a Docker web service.
+```
+
+## Quick start (local)
+
+Requires Node.js 22+, Docker (for local Postgres) or a Neon URL.
 
 ```bash
 git clone https://github.com/raunaksahahere/kavachPay && cd kavachPay
-npm install
-cp .env.example .env.local        # then set DATABASE_URL (and optionally GEMINI_API_KEY, Clerk keys)
-npx clerk@latest init --framework next --accountless -y --no-skills   # only if you have no Clerk keys: writes temporary dev keys
-npm run db:migrate && npm run db:seed && npm run eval:rules && npm run dev   # open http://localhost:3000
+cd backend && npm ci && cp .env.example .env.local    # set DATABASE_URL, CLERK_SECRET_KEY, GEMINI_API_KEY (optional)
+npm run db:migrate && npm run db:seed && npm run dev  # API on http://localhost:4000, docs at /docs
+cd ../frontend && npm ci && cp .env.example .env.local # set the Clerk keys; BACKEND_URL=http://localhost:4000
+npm run dev                                           # app on http://localhost:3000
 ```
 
-No Postgres to hand? `docker compose up -d --wait` starts one on port 5433; use `DATABASE_URL=postgresql://kavach:kavach@localhost:5433/kavach_test`.
+No Postgres? `docker compose -f backend/docker-compose.yml up -d --wait` starts one on port 5433. No Clerk keys? `npx clerk@latest init --framework next --accountless -y --no-skills` in `frontend/` writes temporary development keys; copy `CLERK_SECRET_KEY` into `backend/.env.local` too.
 
 Two ways in:
-- **Sign in with Clerk** to get your **own fresh account**: choose a UPI ID (`name@kavach`), a language and a UPI PIN; it starts with a simulated ₹10,000 balance. Nobody else can act on it.
-- **Demo account trial** (button under the sign-in form): pick one of the shared synthetic accounts, no sign-up needed. Open two different demo accounts on two devices to send requests and payments between them. Every demo account's UPI PIN is **1234**.
+- **Sign in with Clerk** to get your **own fresh account** (UPI ID, language, PIN, simulated ₹10,000).
+- **Demo account trial** (button under the sign-in form): shared synthetic accounts, PIN **1234**; open two on two devices to send requests and payments between them.
 
-### Environment variables
+## Verify the backend yourself
 
-| Variable | Required | Purpose |
+- Interactive API docs: `https://<api-host>/docs` (OpenAPI at `/openapi.json`).
+- `backend/scripts/api-walkthrough.sh https://<api-host>`: starts a demo session, pays ₹1, repeats the request to show it is not charged twice, confirms with the PIN, prints the rule trace and the live backend proof.
+- Analyst dashboard → **Backend proof** tab: live checks that every payment's ledger entries sum to zero, balances equal their entries, no balance is negative, the database guards exist and the audit chain verifies.
+
+## Deploy
+
+- **Backend on Render:** New → Blueprint → this repo (`render.yaml`). Set `DATABASE_URL`, `CLERK_SECRET_KEY`, `GEMINI_API_KEY` and `FRONTEND_ORIGINS` (the frontend URL). Health check `/health`; migrations run on start. The free plan sleeps after ~15 idle minutes, so use a paid plan for judging.
+- **Frontend on Vercel:** root directory `frontend/`; set `BACKEND_URL` (the Render URL, needed at build time), `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`.
+
+## Commands
+
+| Where | Command | What it does |
 |---|---|---|
-| `DATABASE_URL` | yes | Postgres connection string for the app (Neon or local). |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | yes in production | Clerk sign-in. Locally, `npx clerk@latest init --framework next --accountless` writes temporary development keys to `.env.local`. |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | yes | `/sign-in` and `/sign-up`. |
-| `DEMO_SESSION_SECRET` | no | Signs demo-trial cookies; derived from `CLERK_SECRET_KEY` if empty. |
-| `AUTH_DISABLED=1` | no | Turn sign-in off (the automated tests do this). |
-| `GEMINI_API_KEY` | no | Turns on the Gemini layer. Without it the app runs in rules-only mode and every flow still works. |
-| `TEST_DATABASE_URL` | for tests | Database the unit/integration tests may wipe. Defaults to the local container. |
-| `GEMINI_MODEL_LIVE` / `GEMINI_MODEL_COPILOT` | no | Override the models (defaults `gemini-3.5-flash-lite` and `gemini-3.8-flash`). |
-| `AI_TIMEOUT_MS` | no | Budget for live AI calls, default 4000. |
-| `AI_DISABLED=1` | no | Force rules-only mode even with a key. |
-| `AI_CACHE=1` | no | Demo cache: replay Gemini results for identical inputs (labelled "cached" in the UI). |
-
-### Commands
-
-| Command | What it does |
-|---|---|
-| `npm run dev` / `npm run build && npm start` | Run the app. |
-| `npm run db:migrate` | Apply migrations in `drizzle/`. |
-| `npm run db:seed` | Reset the database to the deterministic synthetic dataset (seed `20261114`). |
-| `npm test` | Unit and integration tests (Vitest, against `TEST_DATABASE_URL`). |
-| `npm run test:e2e` | Playwright end-to-end tests in Chrome. Uses its own local database `kavach_e2e`. |
-| `npm run eval:rules` | Rules-only precision, recall and false-positive rate per scenario. Writes `docs/eval.md`. |
-| `npm run eval:ai` | Gemini evaluation: extractor accuracy, rules vs rules + AI, grounding pass rate. Needs `GEMINI_API_KEY`. |
-| `npm run lint` / `npm run typecheck` | Static checks. |
-| `npm run pdf` | Rebuild the idea brief PDF from `docs/idea-brief.md`. |
+| backend | `npm run dev` / `npm run build && npm start` | Run the API |
+| backend | `npm run db:migrate`, `npm run db:seed` | Migrate; reset to the deterministic synthetic dataset |
+| backend | `npm test` | 114 unit, integration and in-process API tests |
+| backend | `npm run eval:rules`, `npm run eval:ai` | Evaluation scripts |
+| backend | `docker build -t kavach-pay-api .` | Production image |
+| frontend | `npm run dev` / `npm run build` | Run or build the UI |
+| frontend | `npm run test:e2e` | Playwright: starts both services, sign-in off and on |
+| root | `node scripts/build-idea-pdf.mjs` | Rebuild the idea PDF |
 
 ---
 
