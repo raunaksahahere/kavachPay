@@ -108,7 +108,7 @@ test('payment API failure stays a failure and never renders a success state', as
   await expect(page.getByTestId('payee-name')).toBeVisible();
   await page.getByTestId('pay-amount').fill('120');
   await page.getByTestId('pay-continue').click();
-  await expect(page.getByTestId('payment-failure')).toContainText('Service temporarily unavailable.');
+  await expect(page.getByTestId('pay-form-error')).toContainText('Service temporarily unavailable.');
   await expect(page.getByTestId('payment-finished')).toHaveCount(0);
 });
 

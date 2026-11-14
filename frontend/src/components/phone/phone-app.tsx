@@ -400,7 +400,7 @@ function PayForm({
           data-testid="pay-message"
         />
       </div>
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger" data-testid="pay-form-error">{error}</p>}
       <Button size="lg" className="mt-auto w-full" disabled={!valid} onClick={submit} data-testid="pay-continue">
         {t('continue', lang)}
       </Button>
