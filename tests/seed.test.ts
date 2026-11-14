@@ -40,6 +40,9 @@ describe('seed generator', () => {
     expect(d.counts.transactions).toBeGreaterThan(4500);
     expect(d.counts.transactions).toBeLessThan(5500);
     expect(d.ring.muleAccountIds).toHaveLength(5);
+    expect(d.users.filter((u) => u.isDemo).map((u) => u.name).sort()).toEqual(
+      ['Asha Devi', 'Meera Das', 'Ravi Kumar', 'Refund Helpdesk', 'Sharma Kirana Store'].sort(),
+    );
     expect(d.ring.victimAccountIds).toHaveLength(40);
     expect(d.counts['scenario:mule_ring']).toBe(40);
     expect(d.counts['scenario:refund_collect']).toBe(26);

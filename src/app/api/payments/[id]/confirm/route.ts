@@ -1,13 +1,13 @@
 import { z } from 'zod';
 import { getDb } from '@/db/client';
-import { handle, idempotencyKey, rateLimit, readJson, schemas } from '@/lib/api/http';
+import { currentActor, handle, idempotencyKey, rateLimit, readJson, schemas } from '@/lib/api/http';
 import { accountForUser } from '@/lib/api/users';
 import { withIdempotency } from '@/lib/ledger/idempotency';
 import { confirmPayment } from '@/lib/ledger/payments';
 
 const body = z
   .object({
-    userId: schemas.userId,
+    userId: schemas.userId.optional(),
     pin: schemas.pin,
     typedAmountPaise: z.number().int().nonnegative().optional(),
   })
@@ -19,13 +19,14 @@ export const POST = handle(async (req, ctx: RouteContext<'/api/payments/[id]/con
   const txnId = z.string().uuid().parse(id);
   const key = idempotencyKey(req);
   const input = await readJson(req, body);
-  await rateLimit(req, 'pin', input.userId);
+  const actor = await currentActor(input.userId);
+  await rateLimit(req, 'pin', actor.userId);
   const db = getDb();
-  const me = await accountForUser(db, input.userId);
+  const me = await accountForUser(db, actor.userId);
 
   const result = await withIdempotency(
     db,
-    { scope: `payments.confirm:${input.userId}`, key, payload: { txnId, ...input } },
+    { scope: `payments.confirm:${actor.userId}`, key, payload: { txnId, ...input } },
     async () => {
       const txn = await confirmPayment(db, {
         txnId,

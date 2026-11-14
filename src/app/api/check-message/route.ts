@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import { getAi } from '@/lib/ai';
-import { handle, rateLimit, readJson, schemas } from '@/lib/api/http';
+import { currentActor, handle, rateLimit, readJson, schemas } from '@/lib/api/http';
 import { basicMessageCheck } from '@/lib/api/views';
 import { reasonText } from '@/lib/risk/explain';
 import { r8FromSignals } from '@/lib/risk/r8';
 
-const body = z.object({ userId: schemas.userId, lang: schemas.lang, message: schemas.message }).strict();
+const body = z.object({ userId: schemas.userId.optional(), lang: schemas.lang, message: schemas.message }).strict();
 
 /**
  * "Check this message": Gemini reads the text or screenshot (G1). The response
@@ -14,7 +14,8 @@ const body = z.object({ userId: schemas.userId, lang: schemas.lang, message: sch
  */
 export const POST = handle(async (req) => {
   const input = await readJson(req, body);
-  await rateLimit(req, 'ai', input.userId);
+  const actor = await currentActor(input.userId);
+  await rateLimit(req, 'ai', actor.userId);
   const ai = getAi();
   const basic = basicMessageCheck(input.message.text ?? '');
 

@@ -1,12 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import { authEnabled, PUBLIC_ROUTES } from '@/config/auth';
+import { DEMO_COOKIE, verifyDemoSession } from '@/lib/auth/demo-session';
 
 const isPublicRoute = createRouteMatcher(PUBLIC_ROUTES);
 
-/** Every page and API route requires a signed-in Clerk user, except the public routes. */
+/**
+ * Every page and API route needs a session, except the public routes: either a
+ * signed-in Clerk user, or a signed demo-trial cookie for a shared persona.
+ */
 const withClerk = clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) await auth.protect();
+  if (isPublicRoute(req)) return;
+  const { userId } = await auth();
+  if (userId) return;
+  if (await verifyDemoSession(req.cookies.get(DEMO_COOKIE)?.value)) return;
+  await auth.protect();
 });
 
 export default function proxy(req: NextRequest, event: NextFetchEvent) {

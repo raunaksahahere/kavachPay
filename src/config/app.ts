@@ -32,6 +32,12 @@ export const APP_CONFIG = {
 
   /** How long a stored idempotent response is replayed. */
   idempotencyTtlHours: 24,
+
+  /** Simulated opening balance for a new signed-in user's account (paise). */
+  openingBalancePaise: 10_000_00,
+
+  /** Demo-trial sessions (shared synthetic personas, no Clerk account). */
+  demoSessionHours: 12,
 } as const;
 
 /** Format paise as rupees, e.g. 499900 -> "₹4,999". */

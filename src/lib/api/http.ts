@@ -1,10 +1,13 @@
 import { auth } from '@clerk/nextjs/server';
+import { cookies } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 import { connection } from 'next/server';
 import { z, ZodError } from 'zod';
 import { APP_CONFIG } from '@/config/app';
 import { authEnabled } from '@/config/auth';
 import { getDb } from '@/db/client';
+import { resolveActor, type Actor } from '@/lib/auth/actor';
+import { DEMO_COOKIE, verifyDemoSession } from '@/lib/auth/demo-session';
 import { AppError } from '@/lib/errors';
 import { enforceRateLimit, type RateLimitRule } from '@/lib/security/rate-limit';
 
@@ -18,10 +21,10 @@ export function handle<Ctx>(fn: (req: Request, ctx: Ctx) => Promise<Response>, o
   return async (req: Request, ctx: Ctx): Promise<Response> => {
     await connection();
     try {
-      // Defence in depth: the proxy already requires sign-in; check again here.
+      // Defence in depth: the proxy already requires a session; check again here.
       if (authEnabled() && !opts.public) {
-        const { userId } = await auth();
-        if (!userId) throw new AppError(401, 'unauthenticated', 'Please sign in.');
+        const s = await sessionFacts();
+        if (!s.clerkUserId && !s.demoUserId) throw new AppError(401, 'unauthenticated', 'Please sign in.');
       }
       return await fn(req, ctx);
     } catch (err) {
@@ -123,3 +126,22 @@ export const schemas = {
     })
     .refine((m) => (m.text && m.text.trim()) || m.image, 'Paste a message or attach a screenshot'),
 };
+
+/** The verified Clerk user and demo-trial persona for this request (either may be null). */
+export async function sessionFacts(): Promise<{ clerkUserId: string | null; demoUserId: string | null }> {
+  if (!authEnabled()) return { clerkUserId: null, demoUserId: null };
+  const { userId } = await auth();
+  const jar = await cookies();
+  const demo = await verifyDemoSession(jar.get(DEMO_COOKIE)?.value);
+  return { clerkUserId: userId ?? null, demoUserId: demo?.userId ?? null };
+}
+
+/**
+ * Whose account this request acts on, decided by the server: the signed-in
+ * user's own account, or the demo persona in a demo-trial session. The client's
+ * `userId` is only used when sign-in is switched off (automated tests).
+ */
+export async function currentActor(requestedUserId?: string): Promise<Actor> {
+  const s = await sessionFacts();
+  return resolveActor(getDb(), { authEnabled: authEnabled(), ...s, requestedUserId });
+}

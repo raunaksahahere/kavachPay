@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { getDb } from '@/db/client';
 import { getAi } from '@/lib/ai';
-import { handle, rateLimit, readJson, schemas } from '@/lib/api/http';
+import { currentActor, handle, rateLimit, readJson, schemas } from '@/lib/api/http';
 import { accountForUser } from '@/lib/api/users';
 import { paymentView } from '@/lib/api/views';
 import { approveCollectRequest, getAccountView } from '@/lib/ledger/payments';
@@ -13,10 +13,11 @@ import { approveCollectRequest, getAccountView } from '@/lib/ledger/payments';
 export const POST = handle(async (req, ctx: RouteContext<'/api/collect/[id]/approve'>) => {
   const { id } = await ctx.params;
   const collectRequestId = z.string().uuid().parse(id);
-  const input = await readJson(req, z.object({ userId: schemas.userId, lang: schemas.lang }).strict());
-  await rateLimit(req, 'payment', input.userId);
+  const input = await readJson(req, z.object({ userId: schemas.userId.optional(), lang: schemas.lang }).strict());
+  const actor = await currentActor(input.userId);
+  await rateLimit(req, 'payment', actor.userId);
   const db = getDb();
-  const me = await accountForUser(db, input.userId);
+  const me = await accountForUser(db, actor.userId);
   const { txn, assessment } = await approveCollectRequest(
     db,
     { collectRequestId, payerAccountId: me.accountId, lang: input.lang },

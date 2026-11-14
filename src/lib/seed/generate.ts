@@ -261,7 +261,17 @@ export function generateDataset(seed: number, anchorInput: Date): Dataset {
   const muleNames = ['Refund Helpdesk', 'Easy Jobs Portal', 'Smart Invest Desk', 'Fast Loan Support', 'Parcel Release Desk'];
   const muleAges = [2, 4, 3, 5, 1];
   const mules = muleNames.map((name, i) =>
-    addParty({ name, kind: 'person', ageDays: muleAges[i], vpa: i === 0 ? 'refund.helpdesk' : undefined, language: 'en' }),
+    addParty({
+      name,
+      kind: 'person',
+      ageDays: muleAges[i],
+      vpa: i === 0 ? 'refund.helpdesk' : undefined,
+      language: 'en',
+      demoBlurb:
+        i === 0
+          ? 'Scam account (synthetic, part of the mule ring). Send a "refund" collect request to asha@kavach and watch Kavach stop it.'
+          : undefined,
+    }),
   );
   const cashout = addParty({ name: 'N Traders', kind: 'person', ageDays: 12, language: 'en' });
   const youngScammers = ['Order Refund Team', 'Cashback Rewards Cell'].map((name, i) =>

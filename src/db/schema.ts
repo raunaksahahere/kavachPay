@@ -30,6 +30,8 @@ export const txnStatus = pgEnum('txn_status', [
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
+  /** Set for real signed-in users: one Kavach account per Clerk user. Null for synthetic demo personas. */
+  clerkUserId: text('clerk_user_id').unique(),
   name: text('name').notNull(),
   phone: text('phone').notNull(),
   kind: text('kind').$type<'person' | 'merchant'>().notNull().default('person'),

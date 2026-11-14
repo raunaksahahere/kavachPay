@@ -8,11 +8,15 @@ export function authEnabled(): boolean {
   return process.env.AUTH_DISABLED !== '1';
 }
 
-/** Routes that work without signing in: sign-in itself, health check and PWA files. */
+/** Routes that work without a session: sign-in, the demo-trial picker, health check and PWA files. */
 export const PUBLIC_ROUTES = [
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/demo(.*)',
   '/api/status',
+  '/api/session',
+  '/api/demo-users',
+  '/api/demo-session',
   '/manifest.webmanifest',
   '/sw.js',
   '/offline.html',

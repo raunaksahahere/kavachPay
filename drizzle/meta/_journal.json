@@ -15,6 +15,13 @@
       "when": 1794626089881,
       "tag": "0001_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794633393513,
+      "tag": "0002_clerk_users",
+      "breakpoints": true
     }
   ]
 }

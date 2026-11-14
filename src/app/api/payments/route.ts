@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { getDb } from '@/db/client';
 import { getAi } from '@/lib/ai';
-import { handle, idempotencyKey, rateLimit, readJson, schemas } from '@/lib/api/http';
+import { currentActor, handle, idempotencyKey, rateLimit, readJson, schemas } from '@/lib/api/http';
 import { accountForUser } from '@/lib/api/users';
 import { withIdempotency } from '@/lib/ledger/idempotency';
 import { getAccountView, payToVpa } from '@/lib/ledger/payments';
@@ -9,7 +9,7 @@ import { paymentView } from '@/lib/api/views';
 
 const body = z
   .object({
-    userId: schemas.userId,
+    userId: schemas.userId.optional(),
     payeeVpa: schemas.vpa,
     amountPaise: schemas.amountPaise,
     note: schemas.note,
@@ -22,13 +22,14 @@ const body = z
 export const POST = handle(async (req) => {
   const key = idempotencyKey(req);
   const input = await readJson(req, body);
-  await rateLimit(req, 'payment', input.userId);
+  const actor = await currentActor(input.userId);
+  await rateLimit(req, 'payment', actor.userId);
   const db = getDb();
-  const me = await accountForUser(db, input.userId);
+  const me = await accountForUser(db, actor.userId);
 
   const result = await withIdempotency(
     db,
-    { scope: `payments.create:${input.userId}`, key, payload: input },
+    { scope: `payments.create:${actor.userId}`, key, payload: input },
     async () => {
       const { txn, assessment } = await payToVpa(
         db,
