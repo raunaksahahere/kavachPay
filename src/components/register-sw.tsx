@@ -1,6 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
+import { captureInstallPrompt } from '@/components/install-app';
+
+// Listen for the install prompt as early as possible (module load, in the browser).
+captureInstallPrompt();
 
 /** Registers the service worker that makes Kavach Pay installable as a PWA. */
 export function RegisterServiceWorker() {

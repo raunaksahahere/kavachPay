@@ -31,6 +31,15 @@ export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang;
   const [reloads, setReloads] = useState(0);
   const load = useCallback(() => setReloads((n) => n + 1), []);
 
+  // Keep the inbox live, so a request sent from another device appears within seconds.
+  useEffect(() => {
+    if (screen.name !== 'home') return;
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') setReloads((n) => n + 1);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [screen.name]);
+
   useEffect(() => {
     let alive = true;
     void api<Wallet>(`/api/wallet?userId=${userId}`).then((res) => {

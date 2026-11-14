@@ -69,3 +69,12 @@ export function timeAgo(iso: string | Date): string {
   if (h < 24) return `${h} h ago`;
   return `${Math.round(h / 24)} d ago`;
 }
+
+/**
+ * Full page load to an internal path. Used only right after the session
+ * changes (demo trial started or ended, signed out), so the server and Clerk
+ * re-read the new cookies instead of the client reusing cached state.
+ */
+export function reloadTo(path: string) {
+  window.location.assign(new URL(path, window.location.origin).toString());
+}
