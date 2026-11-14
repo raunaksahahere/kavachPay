@@ -8,6 +8,7 @@ import { api, parseRupees, rupees, timeAgo } from '@/lib/client/api';
 import { t } from '@/lib/client/i18n';
 import { CheckMessage } from './check-message';
 import { RiskSheet } from './risk-sheet';
+import { TxnDetail } from './txn-detail';
 import type { PaymentView, Wallet } from './types';
 
 type Screen =
@@ -17,7 +18,8 @@ type Screen =
   | { name: 'check' }
   | { name: 'checking'; label: string }
   | { name: 'failure'; message: string }
-  | { name: 'risk'; payment: PaymentView; collectRequestId?: string };
+  | { name: 'risk'; payment: PaymentView; collectRequestId?: string }
+  | { name: 'txn'; item: Wallet['history'][number] };
 
 export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang; onLang: (l: Lang) => void }) {
   const [wallet, setWallet] = useState<Wallet | null>(null);
@@ -84,7 +86,9 @@ export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang;
           ? t('check', lang)
           : screen.name === 'risk'
             ? 'Kavach'
-            : null;
+            : screen.name === 'txn'
+              ? t('txnDetails', lang)
+              : null;
 
   return (
     <div className="phone" data-testid="phone">
@@ -160,6 +164,7 @@ export function PhoneApp({ userId, lang, onLang }: { userId: string; lang: Lang;
           <Button className="w-full" onClick={home}>Back to account</Button>
         </div>
       )}
+      {screen.name === 'txn' && <TxnDetail key={screen.item.id} item={screen.item} userId={userId} lang={lang} />}
       {screen.name === 'risk' && (
         <RiskSheet
           key={screen.payment.txn.id}
@@ -269,33 +274,40 @@ function Home({
               const counterparty = h.direction === 'out' ? (h.payeeName ?? h.payeeVpa) : (h.payerName ?? h.payerVpa);
               const failed = h.status === 'failed' || h.status === 'reversed';
               return (
-                <li key={h.id} className="flex items-center gap-3 px-3 py-2.5">
-                  <span
-                    className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-                      h.direction === 'out' ? 'bg-muted' : 'bg-ok-soft',
-                    )}
+                <li key={h.id}>
+                  <button
+                    type="button"
+                    onClick={() => go({ name: 'txn', item: h })}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-muted"
+                    data-testid="history-item"
                   >
-                    {h.direction === 'out' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4 text-ok" />}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{counterparty}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {timeAgo(h.createdAt)}
-                      {h.note ? ` · ${h.note}` : ''}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className={cn('text-sm font-semibold tabular', failed && 'text-muted-foreground line-through', h.direction === 'in' && !failed && 'text-ok')}>
-                      {h.direction === 'out' ? '−' : '+'}
-                      {rupees(h.amountPaise)}
-                    </p>
-                    {h.status !== 'settled' && (
-                      <Badge tone={h.status === 'held' ? 'danger' : failed ? 'neutral' : 'warn'} className="text-[10px]">
-                        {h.status === 'held' ? 'on hold' : h.status === 'risk_checked' ? 'pending' : h.status}
-                      </Badge>
-                    )}
-                  </div>
+                    <span
+                      className={cn(
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+                        h.direction === 'out' ? 'bg-muted' : 'bg-ok-soft',
+                      )}
+                    >
+                      {h.direction === 'out' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4 text-ok" />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{counterparty}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {timeAgo(h.createdAt)}
+                        {h.note ? ` · ${h.note}` : ''}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className={cn('text-sm font-semibold tabular', failed && 'text-muted-foreground line-through', h.direction === 'in' && !failed && 'text-ok')}>
+                        {h.direction === 'out' ? '−' : '+'}
+                        {rupees(h.amountPaise)}
+                      </p>
+                      {h.status !== 'settled' && (
+                        <Badge tone={h.status === 'held' ? 'danger' : failed ? 'neutral' : 'warn'} className="text-[10px]">
+                          {h.status === 'held' ? 'on hold' : h.status === 'risk_checked' ? 'pending' : h.status}
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
                 </li>
               );
             })}

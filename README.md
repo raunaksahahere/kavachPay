@@ -29,7 +29,7 @@ Requires Node.js 22+, Docker (for local Postgres) or a Neon URL.
 
 ```bash
 git clone https://github.com/raunaksahahere/kavachPay && cd kavachPay
-cd backend && npm ci && cp .env.example .env.local    # set DATABASE_URL, CLERK_SECRET_KEY, GEMINI_API_KEY (optional)
+cd backend && npm ci && cp .env.example .env.local    # set DATABASE_URL, CLERK_SECRET_KEY, GEMINI_API_KEY and ELEVENLABS_API_KEY (both optional)
 npm run db:migrate && npm run db:seed && npm run dev  # API on http://localhost:4000, docs at /docs
 cd ../frontend && npm ci && cp .env.example .env.local # set the Clerk keys; BACKEND_URL=http://localhost:4000
 npm run dev                                           # app on http://localhost:3000
@@ -49,7 +49,7 @@ Two ways in:
 
 ## Deploy
 
-- **Backend on Render:** New → Blueprint → this repo (`render.yaml`). Set `DATABASE_URL`, `CLERK_SECRET_KEY`, `GEMINI_API_KEY` and `FRONTEND_ORIGINS` (the frontend URL). Health check `/health`; migrations run on start. The free plan sleeps after ~15 idle minutes, so use a paid plan for judging.
+- **Backend on Render:** New → Blueprint → this repo (`render.yaml`). Set `DATABASE_URL`, `CLERK_SECRET_KEY`, `GEMINI_API_KEY`, `ELEVENLABS_API_KEY` (optional, for spoken risk reasons) and `FRONTEND_ORIGINS` (the frontend URL). Health check `/health`; migrations run on start. The free plan sleeps after ~15 idle minutes, so use a paid plan for judging.
 - **Frontend on Vercel:** root directory `frontend/`; set `BACKEND_URL` (the Render URL, needed at build time), `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`.
 
 ## Commands

@@ -6,6 +6,7 @@ import type { Lang } from '@/config/app';
 import { Badge, Button, Input, Label, cn } from '@/components/ui';
 import { api, parseRupees, rupees } from '@/lib/client/api';
 import { DECISION_TEXT, t } from '@/lib/client/i18n';
+import { ListenButton } from './listen-button';
 import type { PaymentView } from './types';
 
 type Props = {
@@ -140,6 +141,8 @@ export function RiskSheet({ payment, lang, userId, collectRequestId, onFinished 
             </ul>
           </div>
         )}
+
+        {decision !== 'allow' && <ListenButton txnId={txn.id} userId={userId} lang={lang} />}
 
         <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
           {assessment.rules.map((r) => (

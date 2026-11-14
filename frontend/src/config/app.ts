@@ -51,3 +51,17 @@ export function formatRupees(paise: number): string {
     })
   );
 }
+
+/**
+ * Official places to report a suspected payment fraud in India (checked 14 Nov 2026).
+ * Sources: https://sancharsaathi.gov.in/sfc/ ("If you have already lost money, please
+ * report at cyber crime helpline 1930 or cybercrime.gov.in"; Chakshu is for suspected
+ * fraud calls, SMS and WhatsApp) and https://cms.rbi.org.in/ (RBI complaints).
+ * The same list is printed in the transaction PDF (backend/src/config/reporting.ts).
+ */
+export const REPORTING_CHANNELS = [
+  { id: 'cybercrime', name: 'National Cyber Crime Reporting Portal', url: 'https://cybercrime.gov.in/', label: 'cybercrime.gov.in', hint: 'reportCybercrime' },
+  { id: 'helpline', name: 'Cyber crime helpline 1930', url: 'tel:1930', label: '1930', hint: 'report1930' },
+  { id: 'chakshu', name: 'Chakshu · Sanchar Saathi (DoT)', url: 'https://sancharsaathi.gov.in/sfc/', label: 'sancharsaathi.gov.in/sfc', hint: 'reportChakshu' },
+  { id: 'rbi', name: 'RBI Complaint Management System', url: 'https://cms.rbi.org.in/', label: 'cms.rbi.org.in', hint: 'reportRbi' },
+] as const;

@@ -17,6 +17,8 @@ import { accountRoutes } from './routes/account';
 import { analystRoutes } from './routes/analyst';
 import { messageRoutes } from './routes/messages';
 import { paymentRoutes } from './routes/payments';
+import { reportRoutes } from './routes/reports';
+import { voiceMode } from '@/lib/voice/elevenlabs';
 
 export type AppOptions = {
   /** Browser origins allowed to call the API with credentials. */
@@ -40,7 +42,7 @@ export function createApp(opts: AppOptions) {
       credentials: true,
       allowHeaders: ['Content-Type', 'Idempotency-Key', 'Authorization', 'X-Demo-Session'],
       allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-      exposeHeaders: ['Idempotent-Replayed', 'Retry-After', 'X-Request-Id'],
+      exposeHeaders: ['Idempotent-Replayed', 'Retry-After', 'X-Request-Id', 'Content-Disposition', 'X-Voice-Cached'],
       maxAge: 600,
     }),
   );
@@ -98,6 +100,7 @@ export function createApp(opts: AppOptions) {
         database,
         ai: { enabled: mode.enabled, reason: mode.reason, cache: mode.cache, models: AI_CONFIG.models },
         auth: { enabled: authEnabled() },
+        voice: voiceMode(),
       },
       database === 'ok' ? 200 : 503,
     );
@@ -111,6 +114,7 @@ export function createApp(opts: AppOptions) {
   app.route('/api', paymentRoutes);
   app.route('/api', messageRoutes);
   app.route('/api', analystRoutes);
+  app.route('/api', reportRoutes);
 
   return app;
 }

@@ -61,6 +61,27 @@ export async function api<T>(
   }
 }
 
+/**
+ * Binary GET (audio, PDF) with the same auth as `api`. Errors come back in the
+ * usual JSON error shape.
+ */
+export async function apiFile(path: string): Promise<{ ok: true; blob: Blob; filename: string | null } | { ok: false; status: number; error: ApiError }> {
+  const headers: Record<string, string> = {};
+  const token = await clerkToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  try {
+    const res = await fetch(path, { headers, cache: 'no-store' });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { ok: false, status: res.status, error: (json?.error as ApiError) ?? { code: 'http_error', message: res.statusText } };
+    }
+    const match = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '');
+    return { ok: true, blob: await res.blob(), filename: match?.[1] ?? null };
+  } catch {
+    return { ok: false, status: 0, error: { code: 'network', message: 'No connection. Please try again.' } };
+  }
+}
+
 export const rupees = (paise: number) => {
   const r = paise / 100;
   return '₹' + r.toLocaleString('en-IN', { minimumFractionDigits: Number.isInteger(r) ? 0 : 2, maximumFractionDigits: 2 });
